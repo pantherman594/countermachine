@@ -124,12 +124,13 @@ def transpile(source):
             if counter == -1:
                 break
 
-            # set y to count
+            # set y to count - 1
             counter_program.append(['MACRO', 'cleanup', 'y'])
             for i in range(count - 1):
                 counter_program.append(['inc', 'y'])
 
-            # jump to next step if counter is less than count (reversed below because there's no z=1 check)
+            # jump to next step if counter is less than count (here, written as:
+            # if count - 1 is not less than counter)
             counter_program.append(['MACRO', 'less', 'y', chr(ord('a') + counter), 'z'])
             counter_program.append(['goto', 'step_{}'.format(label), 'if', 'z=0'])
 
