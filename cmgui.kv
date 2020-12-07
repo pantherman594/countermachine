@@ -1,0 +1,132 @@
+<Blank>:
+    Label: 
+        center: root.center 
+        text: root.label
+
+<Conditional>: 
+    canvas: 
+        Color: 
+            rgba: root.line_color
+        Line: 
+            width: 2.
+            points: (self.center_x, self.y, self.x, self.center_y, self.center_x, self.y + self.height, self.x + self.width, self.center_y)
+            close: True
+    Label: 
+        center: root.center 
+        text: root.label
+
+<Statement>:
+    canvas: 
+        Color: 
+            rgba: root.line_color
+        Line: 
+            width: 2.
+            rectangle: (self.x, self.y, self.width, self.height)
+    Label: 
+        center: root.center 
+        text: root.label
+
+<UpArrow>:
+    canvas: 
+        Color: 
+            rgba: root.line_color
+        Line: 
+            width: 2.
+            points:
+                (self.x, self.y,
+                self.center_x, self.y + self.height,
+                self.x + self.width, self.y)
+
+<DownArrow>:
+    canvas: 
+        Color: 
+            rgba: root.line_color
+        Line: 
+            width: 2.
+            points:
+                (self.x, self.y + self.height,
+                self.center_x, self.y,
+                self.x + self.width, self.y + self.height)
+
+<LeftArrow>:
+    canvas: 
+        Color: 
+            rgba: root.line_color
+        Line: 
+            width: 2.
+            points:
+                (self.x + self.width, self.y + self.height,
+                self.x, self.center_y,
+                self.x + self.width, self.y)
+
+<RightArrow>:
+    canvas: 
+        Color: 
+            rgba: root.line_color
+        Line: 
+            width: 2.
+            points:
+                (self.x, self.y + self.height,
+                self.x + self.width, self.center_y,
+                self.x, self.y)
+
+<HorizontalLine>:
+    canvas: 
+        Color: 
+            rgba: root.line_color
+        Line: 
+            width: 2.
+            points: (self.x, self.center_y, self.x + self.width, self.center_y)
+
+<VerticalLine>:
+    canvas: 
+        Color: 
+            rgba: root.line_color
+        Line: 
+            width: 2.
+            points: (self.center_x, self.y, self.center_x, self.y + self.height)
+
+<Connector>:
+    VerticalLine:
+        line_color: (root.line_color[0], root.line_color[1], root.line_color[2], 1 if root.line_n else 0)
+        x: root.x
+        y: root.center_y
+        size: (root.width, root.height / 2)
+    VerticalLine:
+        line_color: (root.line_color[0], root.line_color[1], root.line_color[2], 1 if root.line_s else 0)
+        x: root.x
+        y: root.y
+        size: (root.width, root.height / 2)
+    HorizontalLine:
+        line_color: (root.line_color[0], root.line_color[1], root.line_color[2], 1 if root.line_e else 0)
+        x: root.center_x
+        y: root.y
+        size: (root.width / 2, root.height)
+    HorizontalLine:
+        line_color: (root.line_color[0], root.line_color[1], root.line_color[2], 1 if root.line_w else 0)
+        x: root.x
+        y: root.y
+        size: (root.width / 2, root.height)
+    UpArrow:
+        line_color: (root.line_color[0], root.line_color[1], root.line_color[2], 1 if root.arrow_n else 0)
+        center_x: root.center_x
+        y: root.y + root.height - self.height
+        size: (16, 8)
+    DownArrow:
+        line_color: (root.line_color[0], root.line_color[1], root.line_color[2], 1 if root.arrow_s else 0)
+        center_x: root.center_x
+        y: root.y
+        size: (16, 8)
+    RightArrow:
+        line_color: (root.line_color[0], root.line_color[1], root.line_color[2], 1 if root.arrow_e else 0)
+        x: root.x + root.width - self.width
+        center_y: root.center_y
+        size: (8, 16)
+    LeftArrow:
+        line_color: (root.line_color[0], root.line_color[1], root.line_color[2], 1 if root.arrow_w else 0)
+        x: root.x
+        center_y: root.center_y
+        size: (8, 16)
+    Label:
+        center: root.center
+        text: root.label
