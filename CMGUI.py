@@ -18,6 +18,9 @@ class Component(Widget):
     line_color = ListProperty(COLOR)
     label = StringProperty()
 
+    def __init__(self, **kwargs):
+        super(Component, self).__init__(**kwargs)
+
 class HorizontalLine(Component):
     pass
 
@@ -37,18 +40,18 @@ class RightArrow(Component):
     pass
 
 class Blank(Component):
-    def __init__(self, label=''):
-        super().__init__()
+    def __init__(self, label='', **kwargs):
+        super(Blank, self).__init__(**kwargs)
         self.label = label
 
 class Conditional(Component):
-    def __init__(self, label=''):
-        super().__init__()
+    def __init__(self, label='', **kwargs):
+        super(Conditional, self).__init__(**kwargs)
         self.label = label
 
 class Statement(Component):
-    def __init__(self, label=''):
-        super().__init__()
+    def __init__(self, label='', **kwargs):
+        super(Statement, self).__init__(**kwargs)
         self.label = label
 
 class Connector(Component):
@@ -67,8 +70,9 @@ class Connector(Component):
 
         for direction in 'nsew':
             for key in ['arrow_' + direction, 'line_' + direction]:
-                setattr(self, key, kwargs[key] if key in kwargs else False)
-        super().__init__()
+                setattr(self, key, kwargs.pop(key, False))
+
+        super(Connector, self).__init__(**kwargs)
 
 
 # Create the App class 
@@ -104,7 +108,7 @@ class CMGUI(App):
 def add_attributes_or_create_connector(line, index, attributes):
     connector = line[index]
     if connector is not None and connector[0] == Connector:
-        connector[1] = { **connector[1], **attributes }
+        connector[1].update(attributes)
     else:
         line[index] = [Connector, attributes, -1]
 

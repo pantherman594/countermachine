@@ -33,26 +33,14 @@ def interpret(obj,*args,**kwargs):
     for j in range(len(args)):
         counters[j]=args[j]
 
-    if 'macro' in kwargs:
-        macro = kwargs['macro']
-    else:
-        macro = False
-
-    if 'verbose' in kwargs:
-        verbose=not macro and kwargs['verbose']
-    else:
-        verbose=False
-
-    if 'very_verbose' in kwargs:
-        very_verbose = kwargs['very_verbose']
-        if very_verbose:
-            verbose = True
-    else:
-        very_verbose = False
+    macro = kwargs.pop('macro', False)
+    verbose = not macro and kwargs.pop('verbose', False)
+    very_verbose = kwargs.pop('very_verbose', False)
+    if very_verbose:
+        verbose = True
 
     # merge the program's child_programs with the given ones, if provided.
-    if 'child_programs' in kwargs:
-        child_programs = {**child_programs, **kwargs['child_programs']}
+    child_programs.update(kwargs.pop('child_programs', {}))
 
     ip=0
     while program[ip]!='H':
