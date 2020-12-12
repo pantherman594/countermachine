@@ -76,15 +76,19 @@ class Connector(Component):
 
 
 # Create the App class 
-class CMGUI(App):
-    components = []
+class CMGUIApp(App):
+    #components = []
 
-    def __init__(self, components):
-        self.components = components
+    def __init__(self):
+        #self.components = components
         super().__init__()
 
     # Draws flowchart
-    def draw_flowchart(self):
+    def draw_flowchart(self, filename):
+        assembled = cm.assemble_from_file(filename)[0]
+        print(assembled)
+        components = diagram(assembled)
+
         wrapper = ScrollView(do_scroll_y=True)
 
         # Assign the number of coloumn, spacing and padding
@@ -92,7 +96,7 @@ class CMGUI(App):
                           row_force_default=True)
         root.bind(minimum_height=root.setter('height'))
 
-        for component in self.components:
+        for component in components:
             if component is None:
                 root.add_widget(Blank())
                 continue
@@ -107,7 +111,7 @@ class CMGUI(App):
         return wrapper
 
     def build(self):
-        flowchart = self.draw_flowchart()
+        flowchart = self.draw_flowchart('pow.cp')
 
         return flowchart
 
@@ -254,7 +258,7 @@ def diagram(program):
     return components_flattened
 
 if __name__ == '__main__':
-    assembled = cm.assemble_from_file('pow.cp')[0]
-    print(assembled)
-    components = diagram(assembled)
-    CMGUI(components).run()
+    #assembled = cm.assemble_from_file('pow.cp')[0]
+    #print(assembled)
+    #components = diagram(assembled)
+    CMGUIApp().run()
