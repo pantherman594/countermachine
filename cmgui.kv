@@ -139,6 +139,7 @@
         FileChooserListView:
             id: filechooser
             path: './'
+            filters: ['*.cp']
 
         BoxLayout:
             size_hint_y: None
@@ -159,6 +160,7 @@
         FileChooserListView:
             id: filechooser
             path: './'
+            filters: ['*.cp']
             on_selection: text_input.text = self.selection and self.selection[0] or ''
 
         TextInput:
@@ -346,8 +348,7 @@
                 size: root.width * 0.67, root.height * 0.1
 
                 Button:
-                    text: 'Draw Flowchart'
-                    on_release: root.draw_flowchart()
+                    text: '[DEPRECATED]'
                 Button:
                     text: 'clear flowchart'
                     on_release: root.clear_flowchart()

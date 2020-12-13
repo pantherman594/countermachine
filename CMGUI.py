@@ -23,24 +23,20 @@ class MainWindow(Widget):
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     text_input = ObjectProperty(None)
-    filename1 = StringProperty('')
     flowchart_state = BooleanProperty(False)
 
     wrapper = ScrollView()
 
     # Draws flowchart
-    def draw_flowchart(self):
+    def draw_flowchart(self, filename):
 
         if self.flowchart_state:
             self.clear_flowchart()
 
-        if self.filename1 == '':
-            return
-
         self.wrapper = ScrollView(do_scroll_y=True,
                                   id='drawing')
 
-        assembled = cm.assemble_from_file(self.filename1)[0]
+        assembled = cm.assemble_from_file(filename)[0]
         print(assembled)
         components = diagram(assembled)
 
@@ -86,10 +82,10 @@ class MainWindow(Widget):
         self._popup.dismiss()
 
     def save(self, path, filename):
-        self.filename1 = filename[0]
         with open(os.path.join(path, filename), 'w') as stream:
             stream.write(self.text_input.text)
 
+        self.draw_flowchart(filename[0])
         self.dismiss_popup()
 
     def load(self, path, filename):
@@ -97,6 +93,7 @@ class MainWindow(Widget):
         with open(os.path.join(path, filename[0])) as stream:
             self.text_input.text = stream.read()
 
+        self.draw_flowchart(filename[0])
         self.dismiss_popup()
 
 class LoadDialog(FloatLayout):
