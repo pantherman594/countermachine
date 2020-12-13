@@ -130,3 +130,73 @@
     Label:
         center: root.center
         text: root.label
+
+<MainWindow>:
+
+    BoxLayout:
+        orientation: "horizontal"
+        size: root.width, root.height
+
+        # CP GUI Interface
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: None, None
+            size: root.width * 0.67, root.height
+
+            Button:
+                text: 'Simulator'
+                size_hint: None, None
+                size: root.width * 0.67, root.height * 0.05
+
+            Button:
+                text: 'counter tape'
+                size_hint: None, None
+                size: root.width * 0.67, root.height * 0.05
+
+            BoxLayout:
+                id: flowchart
+                pos_hint: {'x': 0, 'y': .1}
+                size_hint: None, None
+                size: root.width * 0.67, root.height * 0.8
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: None, None
+                size: root.width * 0.67, root.height * 0.1
+
+                Button:
+                    text: 'controls'
+                Button:
+                    text: 'go'
+                Button:
+                    text: 'here'
+
+        # CP Editor
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: None, None
+            size: root.width * 0.33, root.height
+
+            Button:
+                text: 'Editor:'
+                size_hint: None, None
+                size: root.width * 0.33, root.height * 0.05
+
+            Button:
+                text: 'text editor here'
+                size_hint: None, None
+                size: root.width * 0.33, root.height * 0.85
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: None, None
+                size: root.width * 0.33, root.height * 0.1
+
+                Button:
+                    text: 'Load'
+
+                Button:
+                    text: 'Save'
+
+
+

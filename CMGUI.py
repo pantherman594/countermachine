@@ -3,6 +3,7 @@ import kivy
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
 from kivy.uix.scrollview import ScrollView
 from kivy.properties import (ListProperty, StringProperty)
@@ -13,6 +14,9 @@ import countermachine_david as cm
 COLOR = [0, 0, 1, 1]
 HIGHLIGHT = [1, 1, 0, 1]
 TRANSPARENT = [0, 0, 0, 0]
+
+class MainWindow(Widget):
+    pass
 
 class Component(Widget):
     line_color = ListProperty(COLOR)
@@ -74,13 +78,10 @@ class Connector(Component):
 
         super(Connector, self).__init__(**kwargs)
 
-
 # Create the App class 
 class CMGUIApp(App):
-    #components = []
 
     def __init__(self):
-        #self.components = components
         super().__init__()
 
     # Draws flowchart
@@ -91,7 +92,7 @@ class CMGUIApp(App):
 
         wrapper = ScrollView(do_scroll_y=True)
 
-        # Assign the number of coloumn, spacing and padding
+        # Assign the number of column, spacing and padding
         root = GridLayout(size_hint_y=None, cols=3, padding=25, spacing=3, row_default_height='40dp',
                           row_force_default=True)
         root.bind(minimum_height=root.setter('height'))
@@ -111,9 +112,11 @@ class CMGUIApp(App):
         return wrapper
 
     def build(self):
-        flowchart = self.draw_flowchart('pow.cp')
+        gui = MainWindow()
 
-        return flowchart
+        gui.ids.flowchart.add_widget(self.draw_flowchart('pow.cp'))
+
+        return gui
 
 def add_attributes_or_create_connector(line, index, attributes):
     connector = line[index]
