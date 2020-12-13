@@ -38,8 +38,7 @@ class MainWindow(Widget):
         if self.flowchart_state:
             self.clear_flowchart()
 
-        self.wrapper = ScrollView(do_scroll_y=True,
-                                  id='drawing')
+        self.wrapper = ScrollView(do_scroll_y=True)
 
         assembled = cm.assemble_from_file(filename)[0]
         print(assembled)
@@ -92,8 +91,7 @@ class MainWindow(Widget):
         self.counter_tape_wrapper = BoxLayout(orientation = "horizontal")
 
         for number in range(len(self.counter_list)):
-            self.counter_tape_wrapper.add_widget(Label(id=str(number),
-                                                 text=str(self.counter_list[number])))
+            self.counter_tape_wrapper.add_widget(Label(text=str(self.counter_list[number])))
 
         self.ids.counter_tape.add_widget(self.counter_tape_wrapper)
 
@@ -221,7 +219,7 @@ class Connector(Component):
 # Create the App class 
 class CMGUIApp(App):
     def __init__(self):
-        super().__init__()
+        super(CMGUIApp, self).__init__()
 
     def build(self):
         #self.gui.ids.flowchart.add_widget(self.draw_flowchart('pow.cp'))
