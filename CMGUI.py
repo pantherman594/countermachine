@@ -139,7 +139,7 @@ class MainWindow(Widget):
         if self.filename == '':
             # TODO: throw up an error popup later
             return
-        self.counter_list = cm.runcp(self.filename, self.counter_list)
+        self.counter_list = cm.runcp(self.filename, *self.counter_list)
         self.draw_counter_tape()
         return
 
