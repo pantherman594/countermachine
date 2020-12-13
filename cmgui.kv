@@ -199,148 +199,45 @@
                 size_hint: None, None
                 size: root.width * 0.67, root.height * 0.05
 
-            GridLayout:
-                size_hint: None, None
+            BoxLayout:
+                # tape input
+                size_hint: 0.4, None
                 size: root.width * 0.67, root.height * 0.05
-                cols: 26
 
-                Label:
-                    text: 'a'
-                Label:
-                    text: 'b'
-                Label:
-                    text: 'c'
-                Label:
-                    text: 'd'
-                Label:
-                    text: 'e'
-                Label:
-                    text: 'f'
-                Label:
-                    text: 'g'
-                Label:
-                    text: 'h'
-                Label:
-                    text: 'i'
-                Label:
-                    text: 'j'
-                Label:
-                    text: 'k'
-                Label:
-                    text: 'l'
-                Label:
-                    text: 'm'
-                Label:
-                    text: 'n'
-                Label:
-                    text: 'o'
-                Label:
-                    text: 'p'
-                Label:
-                    text: 'q'
-                Label:
-                    text: 'r'
-                Label:
-                    text: 's'
-                Label:
-                    text: 't'
-                Label:
-                    text: 'u'
-                Label:
-                    text: 'v'
-                Label:
-                    text: 'w'
-                Label:
-                    text: 'x'
-                Label:
-                    text: 'y'
-                Label:
-                    text: 'z'
+                AnchorLayout:
+                    size_hint: None, None
+                    size: root.width * 0.3, root.height * 0.05
+
+                    Label:
+                        text: 'Tape Input: '
+                        size_hint: None, None
+                        text_size: self.size
+                        size: root.width * 0.3, root.height * 0.05
+                        halign: 'right'
+                        valign: 'middle'
 
                 TextInput:
-                    text: '0'
+                    id: tape_input
+
+                    hint_text: '0,0,0,0,0,...'
+                    size_hint: None, None
+                    pos_hint: {'x': 0, 'y': 0.15}
+                    size: root.width * 0.3, root.height * 0.035
+                    padding: [6, (self.height - self.line_height)/2]
                     multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
-                TextInput:
-                    text: '0'
-                    multiline: False
+                    on_text_validate: root.on_enter(tape_input.text)
 
             BoxLayout:
                 id: flowchart
                 pos_hint: {'x': 0, 'y': .1}
                 size_hint: None, None
-                size: root.width * 0.67, root.height * 0.8
+                size: root.width * 0.67, root.height * 0.75
+
+            BoxLayout:
+                # counter tape
+                id: counter_tape
+                size_hint: None, None
+                size: root.width * 0.67, root.height * 0.05
 
             BoxLayout:
                 orientation: "horizontal"
@@ -349,6 +246,7 @@
 
                 Button:
                     text: '[DEPRECATED]'
+                    on_release: root.draw_counter_tape()
                 Button:
                     text: 'clear flowchart'
                     on_release: root.clear_flowchart()
@@ -370,7 +268,7 @@
                 TextInput:
                     id: text_input
                     text: ''
-                    size_hint: .95, .98
+                    size_hint_x: .95
                     pos_hint: {'x': 0.025, 'y': 0.025}
                     size: root.width * 0.33, root.height * 0.90
 

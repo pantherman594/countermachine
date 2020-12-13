@@ -6,9 +6,10 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
+from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.scrollview import ScrollView
-from kivy.properties import (ListProperty, StringProperty, ObjectProperty, BooleanProperty)
+from kivy.properties import (ListProperty, StringProperty, ObjectProperty, BooleanProperty, ListProperty, ReferenceListProperty)
 from string import ascii_lowercase as lower
 
 import countermachine_david as cm
@@ -24,8 +25,11 @@ class MainWindow(Widget):
     savefile = ObjectProperty(None)
     text_input = ObjectProperty(None)
     flowchart_state = BooleanProperty(False)
+    counter_tape_state = BooleanProperty(False)
+    counter_list = ListProperty([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
 
     wrapper = ScrollView()
+    counter_tape_wrapper = BoxLayout()
 
     # Draws flowchart
     def draw_flowchart(self, filename):
@@ -68,6 +72,35 @@ class MainWindow(Widget):
             self.flowchart_state = False
         return
 
+
+    def on_enter(self, value):
+        l = value.split(',')
+        for item in range(len(l)):
+            self.counter_list[item] = int(l[item])
+        self.draw_counter_tape()
+        return
+
+    def draw_counter_tape(self):
+        if self.counter_tape_state:
+            self.clear_counter_tape()
+
+        self.counter_tape_wrapper = BoxLayout(orientation = "horizontal")
+
+        for number in range(len(self.counter_list)):
+            self.counter_tape_wrapper.add_widget(Label(id=str(number),
+                                                 text=str(self.counter_list[number])))
+
+        self.ids.counter_tape.add_widget(self.counter_tape_wrapper)
+
+        self.counter_tape_state = True
+
+    def clear_counter_tape(self):
+        if self.counter_tape_state:
+            self.ids.counter_tape.remove_widget(self.counter_tape_wrapper)
+            self.counter_tape_state = False
+
+
+
     def file_chooser(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content, size_hint=(0.4, 0.7))
@@ -85,16 +118,19 @@ class MainWindow(Widget):
         with open(os.path.join(path, filename), 'w') as stream:
             stream.write(self.text_input.text)
 
-        self.draw_flowchart(filename[0])
+        self.draw_flowchart(filename)
         self.dismiss_popup()
 
     def load(self, path, filename):
-        self.filename1 = filename[0]
         with open(os.path.join(path, filename[0])) as stream:
             self.text_input.text = stream.read()
 
         self.draw_flowchart(filename[0])
         self.dismiss_popup()
+
+    def __init__(self):
+        super(MainWindow, self).__init__()
+        self.draw_counter_tape()
 
 class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
@@ -318,8 +354,5 @@ def diagram(program):
     return components_flattened
 
 if __name__ == '__main__':
-    #assembled = cm.assemble_from_file('pow.cp')[0]
-    #print(assembled)
-    #components = diagram(assembled)
-    Window.size = (1400, 900)
+    Window.size = (1600, 900)
     CMGUIApp().run()
