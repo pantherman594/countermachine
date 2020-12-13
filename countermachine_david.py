@@ -30,8 +30,12 @@ def interpret(obj,*args,**kwargs):
     program, child_programs = obj
     counters=[0]*26
 
-    for j in range(len(args)):
-        counters[j]=args[j]
+    #for j in range(len(args)):
+    #    counters[j]=args[j]
+
+    #MODIFIED FOR CMGUI
+    for j in range(len(args[0])):
+        counters[j] = args[0][j]
 
     macro = kwargs.pop('macro', False)
     verbose = not macro and kwargs.pop('verbose', False)

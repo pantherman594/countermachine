@@ -24,9 +24,10 @@ class MainWindow(Widget):
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     text_input = ObjectProperty(None)
+    filename = StringProperty('')
     flowchart_state = BooleanProperty(False)
     counter_tape_state = BooleanProperty(False)
-    counter_list = ListProperty([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+    counter_list = ListProperty([0]*26)
 
     wrapper = ScrollView()
     counter_tape_wrapper = BoxLayout()
@@ -73,11 +74,15 @@ class MainWindow(Widget):
         return
 
 
-    def on_enter(self, value):
-        l = value.split(',')
-        for item in range(len(l)):
-            self.counter_list[item] = int(l[item])
-        self.draw_counter_tape()
+
+    def on_text(self, value):
+        try:
+            l = value.split(',')
+            for item in range(len(l)):
+                self.counter_list[item] = int(l[item])
+            self.draw_counter_tape()
+        except:
+            print('Cannot update counter tape')
         return
 
     def draw_counter_tape(self):
@@ -119,6 +124,7 @@ class MainWindow(Widget):
             stream.write(self.text_input.text)
 
         self.draw_flowchart(filename)
+        self.filename = filename
         self.dismiss_popup()
 
     def load(self, path, filename):
@@ -126,7 +132,18 @@ class MainWindow(Widget):
             self.text_input.text = stream.read()
 
         self.draw_flowchart(filename[0])
+        self.filename = filename[0]
         self.dismiss_popup()
+
+
+
+    def run_counter_program(self):
+        if self.filename == '':
+            # TODO: throw up an error popup later
+            return
+        self.counter_list = cm.runcp(self.filename, self.counter_list)
+        self.draw_counter_tape()
+        return
 
     def __init__(self):
         super(MainWindow, self).__init__()

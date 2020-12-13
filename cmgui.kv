@@ -225,7 +225,7 @@
                     size: root.width * 0.3, root.height * 0.035
                     padding: [6, (self.height - self.line_height)/2]
                     multiline: False
-                    on_text_validate: root.on_enter(tape_input.text)
+                    on_text: root.on_text(tape_input.text)
 
             BoxLayout:
                 id: flowchart
@@ -251,7 +251,8 @@
                     text: 'clear flowchart'
                     on_release: root.clear_flowchart()
                 Button:
-                    text: 'something else'
+                    text: 'run counter program'
+                    on_release: root.run_counter_program()
 
         # CP Editor
         BoxLayout:
