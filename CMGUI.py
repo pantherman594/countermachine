@@ -8,7 +8,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
 from kivy.uix.scrollview import ScrollView
-from kivy.properties import (ListProperty, StringProperty, ObjectProperty)
+from kivy.properties import (ListProperty, StringProperty, ObjectProperty, BooleanProperty)
 from string import ascii_lowercase as lower
 
 import countermachine_david as cm
@@ -19,16 +19,28 @@ HIGHLIGHT = [1, 1, 0, 1]
 TRANSPARENT = [0, 0, 0, 0]
 
 class MainWindow(Widget):
-    # Draws flowchart
+
+    loadfile = ObjectProperty(None)
+    savefile = ObjectProperty(None)
+    text_input = ObjectProperty(None)
+    filename1 = StringProperty('')
+    flowchart_state = BooleanProperty(False)
 
     wrapper = ScrollView()
 
-    def draw_flowchart(self, filename):
+    # Draws flowchart
+    def draw_flowchart(self):
+
+        if self.flowchart_state:
+            self.clear_flowchart()
+
+        if self.filename1 == '':
+            return
 
         self.wrapper = ScrollView(do_scroll_y=True,
-                             id='drawing')
+                                  id='drawing')
 
-        assembled = cm.assemble_from_file(filename)[0]
+        assembled = cm.assemble_from_file(self.filename1)[0]
         print(assembled)
         components = diagram(assembled)
 
@@ -51,25 +63,14 @@ class MainWindow(Widget):
         self.wrapper.add_widget(root)
 
         self.ids.flowchart.add_widget(self.wrapper)
+        self.flowchart_state = True
         return
 
     def clear_flowchart(self):
-        self.ids.flowchart.remove_widget(self.wrapper)
+        if self.flowchart_state:
+            self.ids.flowchart.remove_widget(self.wrapper)
+            self.flowchart_state = False
         return
-
-class LoadDialog(FloatLayout):
-    load = ObjectProperty(None)
-    cancel = ObjectProperty(None)
-
-class SaveDialog(FloatLayout):
-    save = ObjectProperty(None)
-    text_input = ObjectProperty(None)
-    cancel = ObjectProperty(None)
-
-class CPEditor(BoxLayout):
-    loadfile = ObjectProperty(None)
-    savefile = ObjectProperty(None)
-    text_input = ObjectProperty(None)
 
     def file_chooser(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
@@ -85,16 +86,27 @@ class CPEditor(BoxLayout):
         self._popup.dismiss()
 
     def save(self, path, filename):
+        self.filename1 = filename[0]
         with open(os.path.join(path, filename), 'w') as stream:
             stream.write(self.text_input.text)
 
         self.dismiss_popup()
 
     def load(self, path, filename):
+        self.filename1 = filename[0]
         with open(os.path.join(path, filename[0])) as stream:
             self.text_input.text = stream.read()
 
         self.dismiss_popup()
+
+class LoadDialog(FloatLayout):
+    load = ObjectProperty(None)
+    cancel = ObjectProperty(None)
+
+class SaveDialog(FloatLayout):
+    save = ObjectProperty(None)
+    text_input = ObjectProperty(None)
+    cancel = ObjectProperty(None)
 
 class Component(Widget):
     line_color = ListProperty(COLOR)
