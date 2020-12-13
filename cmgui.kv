@@ -131,6 +131,91 @@
         center: root.center
         text: root.label
 
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+            path: './'
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+            Button:
+                text: "Load"
+                on_release: root.load(filechooser.path, filechooser.selection)
+
+<SaveDialog>:
+    text_input: text_input
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+            path: './'
+            on_selection: text_input.text = self.selection and self.selection[0] or ''
+
+        TextInput:
+            id: text_input
+            size_hint_y: None
+            height: 30
+            multiline: False
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Save"
+                on_release: root.save(filechooser.path, text_input.text)
+
+<CPEditor>:
+
+    text_input: text_input
+
+    orientation: "vertical"
+    size_hint: None, None
+
+    Label:
+        text: 'Editor:'
+        size_hint: None, None
+        size: root.width, root.height * 0.05
+
+    AnchorLayout:
+        TextInput:
+            id: text_input
+            text: ''
+            size_hint: .95, .98
+            pos_hint: {'x': 0.025, 'y': 0.025}
+            size: root.width, root.height * 0.90
+
+    BoxLayout:
+        orientation: "horizontal"
+        size_hint : None, None
+        size: root.width, root.height * 0.1
+
+        AnchorLayout:
+            Button:
+                text: 'Load'
+                size_hint: 0.9, 0.6
+                on_release: root.file_chooser()
+
+        AnchorLayout:
+            Button:
+                text: 'Save'
+                size_hint: 0.9, 0.6
+                on_release: root.file_saver()
+
+
 <MainWindow>:
 
     BoxLayout:
@@ -297,37 +382,18 @@
                 size: root.width * 0.67, root.height * 0.1
 
                 Button:
-                    text: 'controls'
+                    text: 'draw pow.cp'
+                    on_press: root.draw_flowchart('pow.cp')
                 Button:
-                    text: 'go'
+                    text: 'clear flowchart'
+                    on_press: root.clear_flowchart()
                 Button:
-                    text: 'here'
+                    text: 'something else'
 
         # CP Editor
-        BoxLayout:
-            orientation: "vertical"
-            size_hint: None, None
+        CPEditor:
             size: root.width * 0.33, root.height
 
-            Label:
-                text: 'Editor:'
-                size_hint: None, None
-                size: root.width * 0.33, root.height * 0.05
-
-            TextInput:
-                size_hint: None, None
-                size: root.width * 0.33, root.height * 0.85
-
-            BoxLayout:
-                orientation: "horizontal"
-                size_hint: None, None
-                size: root.width * 0.33, root.height * 0.1
-
-                Button:
-                    text: 'Load'
-
-                Button:
-                    text: 'Save'
 
 
 
