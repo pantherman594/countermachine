@@ -100,6 +100,7 @@ class MainWindow(Widget):
     running = BooleanProperty(False)
     counter_clock = ObjectProperty(None)
     line_map = ObjectProperty(None)
+    counter_delay = NumericProperty(0.1)
 
     CPLexer = CPLexer
     GruvboxStyle = GruvboxStyle
@@ -285,11 +286,21 @@ class MainWindow(Widget):
         self.filename = filename[0]
         self.dismiss_popup()
 
+    def run_or_pause_counter_program(self):
+        if self.running:
+            self.running = False
+            self.counter_clock.cancel()
+        else:
+            self.running = True
+            self.counter_clock = Clock.schedule_interval(lambda dt: self.step_counter_program(), self.counter_delay)
 
-
-    def run_counter_program(self):
-        self.running = True
-        self.counter_clock = Clock.schedule_interval(lambda dt: self.step_counter_program(), 0.5)
+    def update_delay(self, value):
+        try:
+            self.counter_delay = float(value)
+            self.run_or_pause_counter_program()
+            self.run_or_pause_counter_program()
+        except:
+            print('Invalid delay')
 
     def _on_key_down(self, keyboard, keycode, text, modifiers):
         modifiers_no_caps = modifiers[:]
