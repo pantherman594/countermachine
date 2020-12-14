@@ -216,6 +216,8 @@
                         halign: 'right'
                         valign: 'middle'
 
+                # TODO: center the text input
+
                 TextInput:
                     id: tape_input
 
@@ -242,44 +244,81 @@
             BoxLayout:
                 orientation: "horizontal"
                 size_hint: None, None
-                size: root.width * 0.67, root.height * 0.1
+                size: root.width * 0.67, root.height * 0.091
 
-                # TODO: Add in real buttons instead of these placeholders
+                BoxLayout:
+                    # this is a spacer
+                    size_hint: None, None
+                    size: root.width * 0.67 * 0.003, root.height * 0.097
 
                 GridLayout:
                     cols: 2
                     size_hint: None, None
-                    size: root.width * 0.67 * 0.5, root.height * 0.1
+                    size: root.width * 0.67 * 0.334, root.height * 0.097
 
-                    Button:
-                        text: "Run"
-                        on_release: root.run_counter_program()
+                    AnchorLayout:
+                        Button:
+                            text: "Run"
+                            size_hint: 0.95, 0.8
+                            on_release: root.run_counter_program()
 
-                    Button:
-                        text: "Stop"
+                    AnchorLayout:
+                        Button:
+                            text: "Stop"
+                            size_hint: 0.95, 0.8
 
                     BoxLayout:
-
                         Label:
-                            text: "Delay (s) "
+                            text: "Delay (s)   "
+                            size_hint: None, None
+                            size: root.width * 0.67 * 0.335 * 0.27, root.height * 0.035
+                            text_size: self.size
+                            pos_hint: {'x': 0, 'y': 0.15}
+                            halign: 'right'
+                            valign: 'middle'
 
                         TextInput:
                             text: "0.1"
+                            size_hint: None, None
+                            pos_hint: {'x': 0, 'y': 0.15}
+                            size: root.width * 0.67 * 0.335 * 0.215, root.height * 0.035
 
-                    Button:
-                        text: "Reset"
+                    AnchorLayout:
+                        Button:
+                            text: "Reset"
+                            size_hint: 0.95, 0.8
 
 
                 BoxLayout:
                     orientation: "vertical"
                     size_hint: None, None
-                    size: root.width * 0.67 * 0.5, root.height * 0.1
+                    size: root.width * 0.67 * 0.33, root.height * 0.097
 
-                    Button:
-                        text: "Step"
+                    AnchorLayout:
+                        Button:
+                            text: "Step"
+                            size_hint: 0.95 * 0.5, 0.8
 
-                    Button:
-                        text: "Step Back"
+                    AnchorLayout:
+                        Button:
+                            text: "Step Back"
+                            size_hint: 0.95 * 0.5, 0.8
+
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint: None, None
+                    size: root.width * 0.67 * 0.333, root.height * 0.097
+
+                    Label:
+                        text: "State: 0"
+                    Label:
+                        text: "Step: 0"
+
+            BoxLayout:
+                # this is a spacer
+                size_hint: None, None
+                size: root.width * 0.67, root.height * 0.003
+
 
         # CP Editor
         BoxLayout:
@@ -308,13 +347,13 @@
                 AnchorLayout:
                     Button:
                         text: 'Load'
-                        size_hint: 0.9, 0.6
+                        size_hint: 0.6, 0.4
                         on_release: root.file_chooser()
 
                 AnchorLayout:
                     Button:
                         text: 'Save'
-                        size_hint: 0.9, 0.6
+                        size_hint: 0.6, 0.4
                         on_release: root.file_saver()
 
 
