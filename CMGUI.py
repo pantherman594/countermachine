@@ -134,6 +134,7 @@ class MainWindow(Widget):
 
             widget, args, line = component
             component = widget(**args)
+            component.bind(on_touch_up=partial(self.on_component_press, line))
             root.add_widget(component)
 
             if line is not -1:
@@ -151,6 +152,18 @@ class MainWindow(Widget):
         self.reset_generator()
 
         return
+
+    def on_component_press(self, line, instance, ev):
+        if line == -1:
+            return False
+
+        if not (ev.is_double_tap and instance.collide_point(*ev.pos)):
+            return False
+
+        print(line, self.assembled_counter_program[2][line])
+        self.text_input.cursor = (0, self.assembled_counter_program[2][line])
+        self.text_input.focus = True
+        return True
 
     def reset_all(self):
         if self.counter_clock is not None:
@@ -328,9 +341,7 @@ class MainWindow(Widget):
         return False
 
     def _keyboard_closed(self):
-        print('==========closd')
-        # self._keyboard.unbind(on_key_down=self._on_key_down)
-        # self._keyboard = None
+        pass
 
     def __init__(self):
         super(MainWindow, self).__init__()

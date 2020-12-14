@@ -26,7 +26,7 @@ def allin(s,charset):
     return True
 
 def interpret_generator(obj,*args,**kwargs):
-    program, child_programs = obj
+    program, child_programs, _ = obj # we don't need the source map (3rd value)
     counters=[0]*26
 
     for j in range(len(args)):
@@ -125,10 +125,11 @@ def interpret(obj,*args,**kwargs):
 def assemble(source):
     symbol_table={}
     obj=[]
+    source_map=[]
     current=0
     child_programs = {}
 
-    for line in source:
+    for line_num, line in source:
         #is it a label?
         #These have the form alphanum*:
         if (len(line)==1) and (line[0][-1]==':') and allin(line[0][:-1],alphanum):
@@ -144,6 +145,7 @@ def assemble(source):
         if (len(line)==1) and (line[0]=='print'):
             #print 'print'
             obj.append('P')
+            source_map.append(line_num)
             current+=1
                 
         #is it a conditional branch instruction?
@@ -154,6 +156,7 @@ def assemble(source):
             label=line[1]
             variable=line[3][0]
             obj.append('B'+variable+'#'+label)
+            source_map.append(line_num)
             current+=1
         
     
@@ -163,6 +166,7 @@ def assemble(source):
             #print 'unconditional branch'
             label=line[1]
             obj.append('B'+'#'+label)
+            source_map.append(line_num)
             current+=1
             
         #is it a decrement instruction?
@@ -170,19 +174,21 @@ def assemble(source):
         elif (len(line)==2) and (line[0]=='dec') and (len(line[1])==1) and (line[1][0] in letters):
             #print 'decrement'
             obj.append('D'+line[1][0])
+            source_map.append(line_num)
             current+=1
             
         #is is an increment instruction?
         elif (len(line)==2) and (line[0]=='inc') and (len(line[1])==1) and (line[1][0] in letters):
             #print 'increment'
             obj.append('I'+line[1][0])
+            source_map.append(line_num)
             current+=1
 
         #is it a MACRO call?
         elif (len(line)>=3) and (line[0] == 'MACRO'):
             file = line[1]
             if file not in child_programs:
-                prog, children = assemble_from_file(file, macro=True)
+                prog, children, _ = assemble_from_file(file, macro=True)
 
                 # store the child program's children in the global dictionary. this flattens the child tree
                 for child_name, child_prog in children.items():
@@ -191,12 +197,14 @@ def assemble(source):
 
                 child_programs[file] = prog, {}
             obj.append('M'+file+'#'+''.join(line[2:]))
+            source_map.append(line_num)
             current+=1
             
         #is it a halt instruction?
         elif (len(line)==1) and (line[0]=='halt'):
             #print 'halt'
             obj.append('H')
+            source_map.append(line_num)
             current+=1
     #resolve symbol table references
     for j in range(len(obj)):
@@ -209,7 +217,7 @@ def assemble(source):
             else:
                 instruction=instruction[:place]+str(symbol_table[label])
                 obj[j]=instruction
-    return obj, child_programs
+    return obj, child_programs, source_map
 
 #Now produce object code from source file.  Skip comments and blank lines.
 def assemble_from_file(filename, macro=False):
@@ -217,9 +225,9 @@ def assemble_from_file(filename, macro=False):
         filename += '.cp'
     with open(filename, 'r') as f:
         source=[]
-        for line in f:
+        for line_num, line in enumerate(f):
             if (line[0]!='#') and not allin(line,string.whitespace):
-                source.append(line.split())
+                source.append((line_num, line.split()))
     #print source
     return assemble(source)
 
