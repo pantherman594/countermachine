@@ -297,8 +297,11 @@ class MainWindow(Widget):
     def update_delay(self, value):
         try:
             self.counter_delay = float(value)
-            self.run_or_pause_counter_program()
-            self.run_or_pause_counter_program()
+
+            if self.running:
+                # Recreate the clock with the new delay
+                self.run_or_pause_counter_program()
+                self.run_or_pause_counter_program()
         except:
             print('Invalid delay')
 
