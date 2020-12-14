@@ -135,12 +135,12 @@ class MainWindow(Widget):
         self.filename = filename[0]
         self.dismiss_popup()
 
-
-
     def run_counter_program(self):
         if self.filename == '':
             # TODO: throw up an error popup later
             return
+
+        # TODO: Rewrite runcp to do step by step
         self.counter_list = cm.runcp(self.filename, self.counter_list)
         self.draw_counter_tape()
         return

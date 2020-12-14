@@ -244,15 +244,42 @@
                 size_hint: None, None
                 size: root.width * 0.67, root.height * 0.1
 
-                Button:
-                    text: '[DEPRECATED]'
-                    on_release: root.draw_counter_tape()
-                Button:
-                    text: 'clear flowchart'
-                    on_release: root.clear_flowchart()
-                Button:
-                    text: 'run counter program'
-                    on_release: root.run_counter_program()
+                # TODO: Add in real buttons instead of these placeholders
+
+                GridLayout:
+                    cols: 2
+                    size_hint: None, None
+                    size: root.width * 0.67 * 0.5, root.height * 0.1
+
+                    Button:
+                        text: "Run"
+                        on_release: root.run_counter_program()
+
+                    Button:
+                        text: "Stop"
+
+                    BoxLayout:
+
+                        Label:
+                            text: "Delay (s) "
+
+                        TextInput:
+                            text: "0.1"
+
+                    Button:
+                        text: "Reset"
+
+
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint: None, None
+                    size: root.width * 0.67 * 0.5, root.height * 0.1
+
+                    Button:
+                        text: "Step"
+
+                    Button:
+                        text: "Step Back"
 
         # CP Editor
         BoxLayout:
