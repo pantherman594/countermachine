@@ -183,6 +183,7 @@
 <MainWindow>:
 
     text_input: text_input
+    tape_input: tape_input
 
     BoxLayout:
         orientation: "horizontal"
@@ -245,14 +246,16 @@
                 size: root.width * 0.67, root.height * 0.1
 
                 Button:
-                    text: '[DEPRECATED]'
-                    on_release: root.draw_counter_tape()
+                    text: 'Reset'
+                    on_release: root.reset_all()
                 Button:
-                    text: 'clear flowchart'
-                    on_release: root.clear_flowchart()
+                    text: 'Step'
+                    on_release: root.step_counter_program()
+                    disabled: not root.step_state or root.running
                 Button:
-                    text: 'run counter program'
+                    text: 'Run'
                     on_release: root.run_counter_program()
+                    disabled: not root.step_state or root.running
 
         # CP Editor
         BoxLayout:
@@ -266,9 +269,15 @@
                 size: root.width * 0.33, root.height * 0.05
 
             AnchorLayout:
-                TextInput:
+                CodeInput:
                     id: text_input
                     text: ''
+                    lexer: root.CPLexer()
+                    style: root.GruvboxStyle
+                    background_color: (0.16, 0.16, 0.16, 1)
+                    foreground_color: (0, 0, 0, 1)
+                    font_size: 14
+                    font_name: 'FiraMono-Regular'
                     size_hint_x: .95
                     pos_hint: {'x': 0.025, 'y': 0.025}
                     size: root.width * 0.33, root.height * 0.90

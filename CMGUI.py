@@ -9,45 +9,122 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.scrollview import ScrollView
-from kivy.properties import (ListProperty, StringProperty, ObjectProperty, BooleanProperty, ListProperty, ReferenceListProperty)
+from kivy.properties import (ListProperty, StringProperty, ObjectProperty, BooleanProperty, ListProperty, ReferenceListProperty, NumericProperty)
+from kivy.clock import Clock
+from kivy.utils import escape_markup
 from string import ascii_lowercase as lower
 
 import countermachine_david as cm
 import os
+from pygments.style import Style
+from pygments.lexer import RegexLexer, bygroups
+from pygments.token import Token, Comment, Name, Keyword, Generic, Number, Operator, String
 
 COLOR = [0, 0, 1, 1]
 HIGHLIGHT = [1, 1, 0, 1]
 TRANSPARENT = [0, 0, 0, 0]
+
+class GruvboxStyle(Style):
+    """ Retro groove color scheme for Vim by Github: @morhetz """
+    """ Adapted for Pygments by @daveyarwood """
+
+    background_color = '#282828'
+    styles = {
+        Comment.Preproc:    'noinherit #8ec07c',
+        Comment:            '#928374 italic',
+        Generic.Deleted:    'noinherit #282828 bg:#fb4934',
+        Generic.Emph:       '#83a598 underline',
+        Generic.Error:      '#cc241d underline',
+        Generic.Heading:    '#b8bb26 bold',
+        Generic.Inserted:   'noinherit #282828 bg:#b8bb26',
+        Generic.Output:     'noinherit #504945',
+        Generic.Prompt:     '#ebdbb2',
+        Generic.Strong:     '#ebdbb2',
+        Generic.Subheading: '#b8bb26 bold',
+        Generic.Traceback:  'bg:#fb4934 bold',
+        Generic:            '#ebdbb2',
+        Keyword.Type:       'noinherit #fabd2f',
+        Keyword:            'noinherit #8ec07c',
+        Name.Attribute:     '#b8bb26 bold',
+        Name.Builtin:       '#fabd2f',
+        Name.Constant:      'noinherit #d3869b',
+        Name.Entity:        'noinherit #fabd2f',
+        Name.Exception:     'noinherit #fb4934',
+        Name.Function:      '#fabd2f',
+        Name.Label:         'noinherit #fb4934',
+        Name.Tag:           'noinherit #fb4934',
+        Name.Variable:      'noinherit #ebdbb2',
+        Name:               '#ebdbb2',
+        Number.Float:       'noinherit #d3869b',
+        Number:             'noinherit #d3869b',
+        Operator:           '#fe8019',
+        String.Symbol:      '#83a598',
+        String:             'noinherit #b8bb26',
+        Token:              'noinherit #ebdbb2 bg:#282828',
+    }
+
+class CPLexer(RegexLexer):
+    name = 'CP'
+    aliases = ['cp']
+    filenames = ['*.cp']
+
+    tokens = {
+        'root': [
+            (r'#.*\n', Comment),
+            (r'^([a-zA-Z0-9_]+)(:)', bygroups(Generic.Heading, Generic)),
+            (r'^halt', Name.Tag),
+            (r'^(inc|dec)( )([a-z])', bygroups(Keyword.Type, Generic, Name.Variable)),
+            (r'^(goto)( )([a-zA-Z0-9_]+)( )(if)( )([a-z])( *= *)(0)', bygroups(Name.Tag, Generic, Generic.Heading, Generic, Keyword, Generic, Name.Variable, Generic, Number)),
+            (r'^(goto)( )([a-zA-Z0-9_]+)', bygroups(Name.Tag, Generic, Generic.Heading)),
+            (r'^(MACRO)( )([a-zA-Z0-9_]+)(( *[a-z])*)', bygroups(Name.Tag, Generic, Generic.Heading, Name.Variable)),
+            (r'^print', Name.Tag),
+            (r' *#.*\n', Comment),
+            (r'.*\n', Generic.Error),
+        ]
+    }
 
 class MainWindow(Widget):
 
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     text_input = ObjectProperty(None)
+    tape_input = ObjectProperty(None)
     filename = StringProperty('')
     flowchart_state = BooleanProperty(False)
     counter_tape_state = BooleanProperty(False)
     counter_list = ListProperty([0]*26)
+    assembled_counter_program = ObjectProperty(None)
+    counter_program_generator = ObjectProperty(None)
+    counter_program_step = NumericProperty(0)
+    step_state = BooleanProperty(False)
+    running = BooleanProperty(False)
+    counter_clock = ObjectProperty(None)
+    line_map = ObjectProperty(None)
+
+    CPLexer = CPLexer
+    GruvboxStyle = GruvboxStyle
 
     wrapper = ScrollView()
     counter_tape_wrapper = BoxLayout()
 
     # Draws flowchart
-    def draw_flowchart(self, filename):
+    def draw_flowchart(self):
+        if not self.assembled_counter_program:
+            return
 
         if self.flowchart_state:
             self.clear_flowchart()
 
         self.wrapper = ScrollView(do_scroll_y=True)
 
-        assembled = cm.assemble_from_file(filename)[0]
-        print(assembled)
-        components = diagram(assembled)
+        components = diagram(self.assembled_counter_program[0])
 
         # Assign the number of column, spacing and padding
         root = GridLayout(size_hint_y=None, cols=3, padding=25, spacing=3, row_default_height='40dp',
                           row_force_default=True)
         root.bind(minimum_height=root.setter('height'))
+
+        line_map = dict()
 
         for component in components:
             if component is None:
@@ -55,31 +132,96 @@ class MainWindow(Widget):
                 continue
 
             widget, args, line = component
-
             component = widget(**args)
-
             root.add_widget(component)
+
+            if line is not -1:
+                if line not in line_map:
+                    line_map[line] = []
+                line_map[line].append(component)
 
         self.wrapper.add_widget(root)
 
         self.ids.flowchart.add_widget(self.wrapper)
+
         self.flowchart_state = True
+        self.line_map = line_map
+
+        self.reset_generator()
+
         return
+
+    def reset_all(self):
+        if self.counter_clock is not None:
+            self.counter_clock.cancel()
+        self.running = False
+        self.on_text(self.tape_input.text)
+
+    def reset_generator(self):
+        if not self.assembled_counter_program:
+            self.step_state = False
+            self.running = False
+            self.counter_program_step = 0
+            return
+
+        if self.counter_program_step in self.line_map:
+            for component in self.line_map[self.counter_program_step]:
+                component.line_color = COLOR
+
+        if 0 in self.line_map:
+            for component in self.line_map[0]:
+                component.line_color = HIGHLIGHT
+
+        self.counter_program_step = 0
+
+        self.counter_program_generator = cm.interpret_generator(self.assembled_counter_program,
+                                                                *self.counter_list)
+
+        self.step_state = True
+
+    def step_counter_program(self):
+        if self.flowchart_state and self.step_state:
+            if self.counter_program_step in self.line_map:
+                for component in self.line_map[self.counter_program_step]:
+                    component.line_color = COLOR
+
+            next_step = next(self.counter_program_generator, None)
+            if next_step is None:
+                self.step_state = False
+
+                if self.running:
+                    self.running = False,
+                    self.counter_clock.cancel()
+
+                return
+
+            self.counter_list, self.counter_program_step = next_step
+            print(self.counter_program_step)
+            if self.counter_program_step in self.line_map:
+                for component in self.line_map[self.counter_program_step]:
+                    component.line_color = HIGHLIGHT
+
+            self.draw_counter_tape()
 
     def clear_flowchart(self):
         if self.flowchart_state:
             self.ids.flowchart.remove_widget(self.wrapper)
             self.flowchart_state = False
+            self.line_map = dict()
+            self.counter_program_step = 0
         return
 
-
-
     def on_text(self, value):
+        if self.running:
+            return
+
         try:
             l = value.split(',')
+            self.counter_list = [0]*26
             for item in range(len(l)):
                 self.counter_list[item] = int(l[item])
             self.draw_counter_tape()
+            self.reset_generator()
         except:
             print('Cannot update counter tape')
         return
@@ -111,40 +253,77 @@ class MainWindow(Widget):
 
     def file_saver(self):
         content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
+        print(path, filename)
         self._popup = Popup(title="Save file", content=content, size_hint=(0.4, 0.7))
         self._popup.open()
 
     def dismiss_popup(self):
         self._popup.dismiss()
 
+    def reassemble_counter_program(self, filename):
+        assembled = cm.assemble_from_file(filename)
+        print(assembled)
+        self.assembled_counter_program = assembled
+
     def save(self, path, filename):
+        print(path, filename)
         with open(os.path.join(path, filename), 'w') as stream:
             stream.write(self.text_input.text)
 
-        self.draw_flowchart(filename)
+        self.reassemble_counter_program(filename)
+        self.draw_flowchart()
         self.filename = filename
         self.dismiss_popup()
 
     def load(self, path, filename):
+        print(path, filename)
         with open(os.path.join(path, filename[0])) as stream:
             self.text_input.text = stream.read()
 
-        self.draw_flowchart(filename[0])
+        self.reassemble_counter_program(filename[0])
+        self.draw_flowchart()
         self.filename = filename[0]
         self.dismiss_popup()
 
 
 
     def run_counter_program(self):
-        if self.filename == '':
-            # TODO: throw up an error popup later
-            return
-        self.counter_list = cm.runcp(self.filename, *self.counter_list)
-        self.draw_counter_tape()
-        return
+        self.running = True
+        self.counter_clock = Clock.schedule_interval(lambda dt: self.step_counter_program(), 0.5)
+
+    def _on_key_down(self, keyboard, keycode, text, modifiers):
+        modifiers_no_caps = modifiers[:]
+        if 'capslock' in modifiers_no_caps:
+            modifiers_no_caps.remove('capslock')
+        ctrl_modifiers = ['ctrl', 'lctrl', 'rctrl']
+        ctrl = len(modifiers_no_caps) == 1 and modifiers_no_caps[0] in ctrl_modifiers
+
+        if keycode[0] == 115 and ctrl: # s
+            if self.filename:
+                self.save('', self.filename)
+            else:
+                self.file_saver()
+            return True
+        if keycode[0] == 114 and ctrl: # r
+            self.draw_flowchart()
+            return True
+        if keycode[0] == 111 and ctrl: # o
+            self.file_chooser()
+            return True
+
+        return False
+
+    def _keyboard_closed(self):
+        print('==========closd')
+        # self._keyboard.unbind(on_key_down=self._on_key_down)
+        # self._keyboard = None
 
     def __init__(self):
         super(MainWindow, self).__init__()
+        self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+        print('bind')
+        self._keyboard.bind(on_key_down=self._on_key_down)
+        print(self.text_input.style)
         self.draw_counter_tape()
 
 class LoadDialog(FloatLayout):
@@ -223,8 +402,20 @@ class CMGUIApp(App):
 
     def build(self):
         #self.gui.ids.flowchart.add_widget(self.draw_flowchart('pow.cp'))
+        self.bind(on_start=self.post_build)
 
         return MainWindow()
+
+    def post_build(self, ev):
+        Window.bind(on_keyboard=self.key_handler)
+
+    def key_handler(self, window, keycode1, keycode2, text, modifiers):
+        if keycode1 == 27: # escape
+            # Ignore the escape key so that it doesn't close the app
+            print("escape")
+            return True
+        return False
+
 
 def add_attributes_or_create_connector(line, index, attributes):
     connector = line[index]
@@ -238,7 +429,7 @@ def diagram(program):
     for i in range(len(program) * 2):
         components.append([None, None, None])
 
-    components[0] = [None, [Connector, { 'line_n': True, 'line_s': True, 'arrow_s': True }, 0], None]
+    components[0] = [None, [Connector, { 'line_n': True, 'line_s': True, 'arrow_s': True }, -1], None]
 
     for i, line in enumerate(program):
         if line[0] == 'B' and line[1] in lower:

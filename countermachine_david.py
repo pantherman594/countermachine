@@ -25,8 +25,7 @@ def allin(s,charset):
             return False
     return True
 
-
-def interpret(obj,*args,**kwargs):
+def interpret_generator(obj,*args,**kwargs):
     program, child_programs = obj
     counters=[0]*26
 
@@ -109,7 +108,15 @@ def interpret(obj,*args,**kwargs):
         if verbose:
             print(counters)
 
-    return counters
+        yield counters, ip
+
+    yield counters, ip
+
+def interpret(obj,*args,**kwargs):
+    last = None
+    for state, _ in interpret_generator(obj, *args, **kwargs):
+        last = state
+    return last
 
 #A source program is here represented as a sequence of lines, each
 #line a list of strings.  Assemble the source program into the lower-level
