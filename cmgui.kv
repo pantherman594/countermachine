@@ -270,27 +270,24 @@
                             size_hint: 0.95, 0.8
                             on_release: root.reset_all()
 
-                    BoxLayout:
+                    AnchorLayout:
+                        size: root.width * 0.67 * 0.335 * 0.2, root.height * 0.097 * 0.5
                         Label:
-                            text: "Delay (s)   "
+                            text: " Delay (s)"
                             size_hint: None, None
-                            size: root.width * 0.67 * 0.335 * 0.27, root.height * 0.035
                             text_size: self.size
                             pos_hint: {'x': 0, 'y': 0.15}
-                            halign: 'right'
+                            halign: 'center'
                             valign: 'middle'
 
+                    AnchorLayout:
                         TextInput:
                             text: "0.1"
                             size_hint: None, None
                             pos_hint: {'x': 0, 'y': 0.15}
-                            size: root.width * 0.67 * 0.335 * 0.215, root.height * 0.035
+                            size: root.width * 0.67 * 0.335 * 0.474, root.height * 0.035
                             on_text: root.update_delay(self.text)
 
-                    AnchorLayout:
-                        Button:
-                            text: "Reset"
-                            size_hint: 0.95, 0.8
 
 
                 BoxLayout:
