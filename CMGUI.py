@@ -14,6 +14,9 @@ from kivy.clock import Clock
 from kivy.utils import escape_markup
 from string import ascii_lowercase as lower
 
+from codeinput import CodeInputM
+from textinput import TextInputM
+from button import ButtonM
 import countermachine_david as cm
 import os
 from pygments.style import Style
@@ -60,7 +63,7 @@ class GruvboxStyle(Style):
         Operator:           '#fe8019',
         String.Symbol:      '#83a598',
         String:             'noinherit #b8bb26',
-        Token:              'noinherit #ebdbb2 bg:#282828',
+        Token:              'noinherit #665c54',
     }
 
 class CPLexer(RegexLexer):
@@ -70,14 +73,15 @@ class CPLexer(RegexLexer):
 
     tokens = {
         'root': [
+            (r'^ *[0-9]* ', Token),
             (r'#.*\n', Comment),
-            (r'^([a-zA-Z0-9_]+)(:)', bygroups(Generic.Heading, Generic)),
-            (r'^halt', Name.Tag),
-            (r'^(inc|dec)( )([a-z])', bygroups(Keyword.Type, Generic, Name.Variable)),
-            (r'^(goto)( )([a-zA-Z0-9_]+)( )(if)( )([a-z])( *= *)(0)', bygroups(Name.Tag, Generic, Generic.Heading, Generic, Keyword, Generic, Name.Variable, Generic, Number)),
-            (r'^(goto)( )([a-zA-Z0-9_]+)', bygroups(Name.Tag, Generic, Generic.Heading)),
-            (r'^(MACRO)( )([a-zA-Z0-9_]+)(( *[a-z])*)', bygroups(Name.Tag, Generic, Generic.Heading, Name.Variable)),
-            (r'^print', Name.Tag),
+            (r'([a-zA-Z0-9_]+)(:)', bygroups(Generic.Heading, Generic)),
+            (r'halt', Name.Tag),
+            (r'(inc|dec)( )([a-z])', bygroups(Keyword.Type, Generic, Name.Variable)),
+            (r'(goto)( )([a-zA-Z0-9_]+)( )(if)( )([a-z])( *= *)(0)', bygroups(Name.Tag, Generic, Generic.Heading, Generic, Keyword, Generic, Name.Variable, Generic, Number)),
+            (r'(goto)( )([a-zA-Z0-9_]+)', bygroups(Name.Tag, Generic, Generic.Heading)),
+            (r'(MACRO)( )([a-zA-Z0-9_]+)(( *[a-z])*)', bygroups(Name.Tag, Generic, Generic.Heading, Name.Variable)),
+            (r'print', Name.Tag),
             (r' *#.*\n', Comment),
             (r'.*\n', Generic.Error),
         ]
@@ -139,7 +143,7 @@ class MainWindow(Widget):
             component.bind(on_touch_up=partial(self.on_component_press, line))
             root.add_widget(component)
 
-            if line is not -1:
+            if line != -1:
                 if line not in line_map:
                     line_map[line] = []
                 line_map[line].append(component)
@@ -174,10 +178,8 @@ class MainWindow(Widget):
         except IndexError:
             end_index = len(self.text_input.text)
 
-        print(start_index, end_index)
-
         self.text_input.focus = True
-        self.text_input.select_text(start_index, end_index)
+        Clock.schedule_once(lambda dt: self.text_input.select_text(start_index, end_index))
         return True
 
     def reset_all(self):
@@ -301,44 +303,40 @@ class MainWindow(Widget):
 
     def reassemble_counter_program(self, filename):
         assembled = cm.assemble_from_file(filename)
-        print(assembled)
         self.assembled_counter_program = assembled
 
     def save(self, path, filename):
-        print(path, filename)
         if len(filename) < 3 and filename[-3:] != '.cp':
-            filename+=".cp"
+            filename += '.cp'
 
-        with open(os.path.join(path, filename), 'w') as stream:
+        file = os.path.join(path, filename)
+
+        with open(file, 'w') as stream:
             stream.write(self.text_input.text)
 
-        if path not in filename:
-            filename = path+"\\"+filename
-        self.reassemble_counter_program(filename)
+        self.filename = os.path.realpath(file)
+        self.reassemble_counter_program(self.filename)
         try:
             self.draw_flowchart()
         except:
             print("failed to draw flowchart")
-        self.filename = filename
         self.dismiss_popup()
 
     def load(self, path, filename):
-        print(path, filename)
-        try:
-            if len(filename[0]) < 3:
-                return
-            with open(os.path.join(path, filename[0])) as stream:
-                self.text_input.text = stream.read()
+        if len(filename) < 1:
+            return
 
-            self.reassemble_counter_program(filename[0])
-            try:
-                self.draw_flowchart()
-            except:
-                print("failed to draw flowchart")
-            self.filename = path+filename[0]
-            self.dismiss_popup()
+        file = os.path.join(path, filename[0])
+        with open(file) as stream:
+            self.text_input.text = stream.read()
+
+        self.filename = os.path.realpath(file)
+        self.reassemble_counter_program(self.filename)
+        try:
+            self.draw_flowchart()
         except:
-            print("failed to load")
+            print("failed to draw flowchart")
+        self.dismiss_popup()
 
     def step_back_counter_program(self):
         # generator has no easy way to step back so lol, this will do
@@ -410,9 +408,7 @@ class MainWindow(Widget):
     def __init__(self):
         super(MainWindow, self).__init__()
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
-        print('bind')
         self._keyboard.bind(on_key_down=self._on_key_down)
-        print(self.text_input.style)
         self.draw_counter_tape()
 
 class LoadDialog(FloatLayout):
@@ -501,7 +497,6 @@ class CMGUIApp(App):
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 27: # escape
             # Ignore the escape key so that it doesn't close the app
-            print("escape")
             return True
         return False
 
