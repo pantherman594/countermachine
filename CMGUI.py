@@ -261,7 +261,6 @@ class MainWindow(Widget):
             self.counter_list_total_len += self.counter_list_len[number]
         self.counter_list_total_len -= 1
         self.counter_list_total_len_soft = 26 + ((self.counter_list_total_len - 26) / 4)
-        print(self.counter_list_total_len_soft, self.counter_list_total_len)
 
     def clear_flowchart(self):
         if self.flowchart_state:

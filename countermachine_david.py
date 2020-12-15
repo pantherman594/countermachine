@@ -50,7 +50,7 @@ def interpret_generator(obj,*args,**kwargs):
         if current_instruction[0] == 'I':
             variable=ord(current_instruction[1])-ord('a')
             counters[variable]+=1
-            
+
             if verbose:
                 print (str(ip)+': '+'inc '+current_instruction[1])
             ip+=1
@@ -110,8 +110,6 @@ def interpret_generator(obj,*args,**kwargs):
             print(counters)
 
         yield counters, ip
-
-    yield counters, ip
 
 def interpret(obj,*args,**kwargs):
     last = None
