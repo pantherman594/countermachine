@@ -101,12 +101,12 @@ class MainWindow(Widget):
     counter_program_generator = ObjectProperty(None)
     counter_program_step = NumericProperty(0)
     counter_program_step_count = NumericProperty(0)
+    counter_program_history = ListProperty([])
     step_state = BooleanProperty(False)
     running = BooleanProperty(False)
     counter_clock = ObjectProperty(None)
     line_map = ObjectProperty(None)
     counter_delay = NumericProperty(0.1)
-    start_state = BooleanProperty(True)
 
     CPLexer = CPLexer
     GruvboxStyle = GruvboxStyle
@@ -186,7 +186,6 @@ class MainWindow(Widget):
         if self.counter_clock is not None:
             self.counter_clock.cancel()
         self.running = False
-        self.counter_program_step_count = 0
         self.on_text(self.tape_input.text)
 
     def reset_generator(self):
@@ -205,6 +204,8 @@ class MainWindow(Widget):
                 component.line_color = HIGHLIGHT
 
         self.counter_program_step = 0
+        self.counter_program_step_count = 0
+        self.counter_program_history = [(self.counter_list, 0)]
 
         self.counter_program_generator = cm.interpret_generator(self.assembled_counter_program,
                                                                 *self.counter_list)
@@ -212,13 +213,22 @@ class MainWindow(Widget):
         self.step_state = True
 
     def step_counter_program(self):
-        self.start_state = False
         if self.flowchart_state and self.step_state:
             if self.counter_program_step in self.line_map:
                 for component in self.line_map[self.counter_program_step]:
                     component.line_color = COLOR
 
-            next_step = next(self.counter_program_generator, None)
+            self.counter_program_step_count += 1
+            step_count = self.counter_program_step_count
+            try:
+                next_step = self.counter_program_history[step_count]
+            except:
+                next_step = next(self.counter_program_generator, None)
+                if next_step is None:
+                    self.counter_program_history.append(None)
+                else:
+                    self.counter_program_history.append((next_step[0][:], next_step[1]))
+
             if next_step is None:
                 self.step_state = False
 
@@ -229,8 +239,6 @@ class MainWindow(Widget):
                 return
 
             self.counter_list, self.counter_program_step = next_step
-            self.counter_program_step_count += 1
-            print(self.counter_program_step)
             if self.counter_program_step in self.line_map:
                 for component in self.line_map[self.counter_program_step]:
                     component.line_color = HIGHLIGHT
@@ -259,7 +267,6 @@ class MainWindow(Widget):
                 self.counter_list[item] = int(l[item])
         except:
             print('Cannot update counter tape')
-        self.start_state = True
         self.draw_counter_tape()
         self.reset_generator()
         return
@@ -339,12 +346,19 @@ class MainWindow(Widget):
         self.dismiss_popup()
 
     def step_back_counter_program(self):
-        # generator has no easy way to step back so lol, this will do
-        count = self.counter_program_step_count
-        self.reset_all()
+        self.step_state = True
+        if self.counter_program_step in self.line_map:
+            for component in self.line_map[self.counter_program_step]:
+                component.line_color = COLOR
 
-        for i in range(count-1):
-            self.step_counter_program()
+        self.counter_program_step_count -= 1
+        next_step = self.counter_program_history[self.counter_program_step_count]
+        self.counter_list, self.counter_program_step = next_step
+        if self.counter_program_step in self.line_map:
+            for component in self.line_map[self.counter_program_step]:
+                component.line_color = HIGHLIGHT
+
+        self.draw_counter_tape()
 
     def run_or_pause_counter_program(self):
         if self.running:
@@ -359,13 +373,15 @@ class MainWindow(Widget):
                     for component in self.line_map[self.counter_program_step]:
                         component.line_color = COLOR
 
-                last_state = None
-                last_step = -1
                 for value in self.counter_program_generator:
-                    last_state, last_step = value
+                    self.counter_program_step_count += 1
+                    new_value = (value[0][:], value[1])
+                    try:
+                        self.counter_program_history[self.counter_program_step_count] = new_value
+                    except:
+                        self.counter_program_history.append(new_value)
 
-                self.counter_list = last_state
-                self.counter_program_step = last_step
+                self.counter_list, self.counter_program_step = self.counter_program_history[-1]
 
                 self.step_state = False
                 self.running = False
