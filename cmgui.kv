@@ -145,10 +145,10 @@
         BoxLayout:
             size_hint_y: None
             height: 30
-            Button:
+            ButtonM:
                 text: "Cancel"
                 on_release: root.cancel()
-            Button:
+            ButtonM:
                 text: "Load"
                 on_release: root.load(filechooser.path, filechooser.selection)
 
@@ -165,7 +165,7 @@
             on_selection: text_input.text = self.selection and self.selection[0] or ''
             on_submit: root.save(filechooser.path, text_input.text)
 
-        TextInput:
+        TextInputM:
             id: text_input
             size_hint_y: None
             height: 30
@@ -175,11 +175,11 @@
         BoxLayout:
             size_hint_y: None
             height: 30
-            Button:
+            ButtonM:
                 text: "Cancel"
                 on_release: root.cancel()
 
-            Button:
+            ButtonM:
                 text: "Save"
                 on_release: root.save(filechooser.path, text_input.text)
 
@@ -221,7 +221,7 @@
                         halign: 'right'
                         valign: 'middle'
 
-                TextInput:
+                TextInputM:
                     id: tape_input
 
                     hint_text: '0,0,0,0,0,...'
@@ -481,14 +481,14 @@
                     size: root.width * 0.67 * 0.334 - 1, root.height * 0.097 - 1
 
                     AnchorLayout:
-                        Button:
+                        ButtonM:
                             text: "Pause" if root.running else "Run"
                             size_hint: 0.95, 0.8
                             on_release: root.run_or_pause_counter_program()
                             disabled: not root.step_state
 
                     AnchorLayout:
-                        Button:
+                        ButtonM:
                             text: "Reset"
                             size_hint: 0.95, 0.8
                             on_release: root.reset_all()
@@ -504,7 +504,7 @@
                             valign: 'middle'
 
                     AnchorLayout:
-                        TextInput:
+                        TextInputM:
                             text: "0.1"
                             size_hint: None, None
                             pos_hint: {'x': 0, 'y': 0.15}
@@ -525,17 +525,17 @@
                     size: root.width * 0.67 * 0.33 - 1, root.height * 0.097 - 1
 
                     AnchorLayout:
-                        Button:
+                        ButtonM:
                             text: "Step"
                             size_hint: 0.95 * 0.5, 0.8
                             on_release: root.step_counter_program()
                             disabled: not root.step_state or root.running
 
                     AnchorLayout:
-                        Button:
+                        ButtonM:
                             text: "Step Back"
                             size_hint: 0.95 * 0.5, 0.8
-                            disabled: root.start_state
+                            disabled: root.counter_program_step_count == 0
                             on_release: root.step_back_counter_program()
 
                 BoxLayout:
@@ -579,7 +579,7 @@
                 size: root.width * 0.33 - 1, root.height * 0.05
 
             AnchorLayout:
-                CodeInput:
+                CodeInputM:
                     id: text_input
                     text: ''
                     lexer: root.CPLexer()
@@ -598,13 +598,13 @@
                 size: root.width * 0.33 - 1, root.height * 0.1
 
                 AnchorLayout:
-                    Button:
+                    ButtonM:
                         text: 'Load'
                         size_hint: 0.6, 0.4
                         on_release: root.file_chooser()
 
                 AnchorLayout:
-                    Button:
+                    ButtonM:
                         text: 'Save'
                         size_hint: 0.6, 0.4
                         on_release: root.file_saver()
