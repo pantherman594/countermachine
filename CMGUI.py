@@ -355,7 +355,7 @@ class MainWindow(Widget):
             for component in self.line_map[self.counter_program_step]:
                 component.line_color = HIGHLIGHT
 
-        self.draw_counter_tape()
+        self.update_counter_tape_strings()
 
     def run_or_pause_counter_program(self):
         if self.running:
