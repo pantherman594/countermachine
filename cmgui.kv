@@ -197,10 +197,12 @@
             size_hint: None, None
             size: root.width * 0.67 - 1, root.height
 
-            Label:
-                text: 'Simulator:'
-                size_hint: None, None
-                size: root.width * 0.67 - 1, root.height * 0.05
+            AnchorLayout:
+                Label:
+                    text: 'Simulator:'
+                    size_hint: None, None
+                    size: root.width * 0.67 - 1, root.height * 0.05
+                    valign: "bottom"
 
             BoxLayout:
                 # tape input
@@ -348,6 +350,7 @@
                         Button:
                             text: "Step Back"
                             size_hint: 0.95 * 0.5, 0.8
+                            disabled: root.start_state
 
                 BoxLayout:
                     orientation: "vertical"
@@ -355,9 +358,10 @@
                     size: root.width * 0.67 * 0.333 - 1, root.height * 0.097 - 1
 
                     Label:
-                        text: "State: 0"
+                        id: state_display
+                        text: "State: " + str(root.counter_program_step)
                     Label:
-                        text: "Step: " + str(root.counter_program_step)
+                        text: "Step: " + str(root.counter_program_step_count)
 
             BoxLayout:
                 # this is a spacer
