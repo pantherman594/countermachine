@@ -170,6 +170,7 @@
             size_hint_y: None
             height: 30
             multiline: False
+            on_text_validate: root.save(filechooser.path, text_input.text)
 
         BoxLayout:
             size_hint_y: None
@@ -324,6 +325,7 @@
                             text: "0.1"
                             size_hint: None, None
                             pos_hint: {'x': 0, 'y': 0.15}
+                            multiline: False
                             size: root.width * 0.67 * 0.335 * 0.474 - 1, root.height * 0.035 - 1
                             on_text: root.update_delay(self.text)
 

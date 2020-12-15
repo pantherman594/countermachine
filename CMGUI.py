@@ -306,9 +306,14 @@ class MainWindow(Widget):
 
     def save(self, path, filename):
         print(path, filename)
+        if filename[-3:] != '.cp':
+            filename+=".cp"
+
         with open(os.path.join(path, filename), 'w') as stream:
             stream.write(self.text_input.text)
 
+        if path not in filename:
+            filename = path+"\\"+filename
         self.reassemble_counter_program(filename)
         try:
             self.draw_flowchart()
