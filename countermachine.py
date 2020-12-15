@@ -12,8 +12,7 @@
 #The function below interprets the low-level code.  The second argument is
 #a tuple of integers originally assigned to 'a','b',.... 
 
-
-
+import os
 import string
 import sys
 letters='abcdefghijklmnopqrstuvwxyz'
@@ -27,15 +26,22 @@ def allin(s,charset):
             return False
     return True
 
-
-def interpret(program,*args,**kwargs):
+def interpret_generator(obj,*args,**kwargs):
+    program, child_programs, _ = obj # we don't need the source map (3rd value)
     counters=[0]*26
+
     for j in range(len(args)):
         counters[j]=args[j]
-    if 'verbose' in kwargs:
-        verbose=kwargs['verbose']
-    else:
-        verbose=False
+
+    macro = kwargs.pop('macro', False)
+    verbose = not macro and kwargs.pop('verbose', False)
+    very_verbose = kwargs.pop('very_verbose', False)
+    if very_verbose:
+        verbose = True
+
+    # merge the program's child_programs with the given ones, if provided.
+    child_programs.update(kwargs.pop('child_programs', {}))
+
     ip=0
     while program[ip]!='H':
         current_instruction = program[ip]
@@ -44,7 +50,7 @@ def interpret(program,*args,**kwargs):
         if current_instruction[0] == 'I':
             variable=ord(current_instruction[1])-ord('a')
             counters[variable]+=1
-            
+
             if verbose:
                 print (str(ip)+': '+'inc '+current_instruction[1])
             ip+=1
@@ -71,70 +77,58 @@ def interpret(program,*args,**kwargs):
             if verbose:
                 print (str(ip)+': '+'goto '+str(target))
             ip=target
-            
-    return counters
 
-######################################################
+        elif current_instruction[0]=='M':
+            file, macro_counters = current_instruction[1:].split('#')
 
-# changing the references to counters in program, to match those of counters, and append those to obj
+            if verbose:
+                print(str(ip) + ': MACRO ' + file + ' ' + ' '.join(list(macro_counters)))
 
-def integrate(program,counters, obj, current):
+            macro_counters = [(ord(x) - ord('a') if x in letters else -1) for x in macro_counters]
+            macro_counter_values = [(counters[x] if x >= 0 else 0) for x in macro_counters]
 
-    # create a new variable to keep track of current since we need the original current to offset goto calls
-    final_current = current
+            # call the child program. pass the global child_programs down to it
+            result = interpret((child_programs[file], {}, []),
+                               *macro_counter_values,
+                               verbose=verbose,
+                               very_verbose=very_verbose,
+                               child_programs=child_programs,
+                               macro=True)
 
-    for line in program:
-        # create the new translated line beginning with the first character (is typically H, I, D, or B)
-        newline = ''+line[0]
+            # copy the named counters back to the main counter program
+            for i, variable in enumerate(macro_counters):
+                if variable >= 0:
+                    counters[variable] = result[i]
 
-        # for I and D, simply translate the counter values and concatenate it with newline
-        if line[0] == 'I' or line[0] == 'D':
-            found_var = False
-            for i in range(len(counters)):
-                if (ord('a')+i) == ord(line[1]):
-                    newline += counters[i][0]
-                    found_var = True
-            if not found_var:
-                sys.exit('MACRO: counter assignment not found')
+            ip+=1
 
-        # for B with conditions, we convert both counter value and the goto line
-        elif line[0] == 'B' and (line[1] in letters):
-            found_var = False
-            for i in range(len(counters)):
-                if (ord('a')+i) == ord(line[1]):
-                    newline += counters[i][0]
-                    found_var = True
-            if not found_var:
-                sys.exit('MACRO: counter assignment not found')
-            newline+=str(int(line[2:])+current)
+        elif current_instruction[0]=='P':
+            print(str(ip)+':', counters)
+            ip+=1
 
-        # for unconditional B, we simply convert the goto line
-        elif line[0] == 'B':
-            newline += str(int(line[1:])+current)
-        obj.append(newline)
-        final_current+=1
+        if verbose:
+            print(counters)
 
-    # we check our converted code for any H, and change those to goto whatever comes after our translated code
-    for index in range(len(obj)):
-        if obj[index] == 'H':
-            newline='B'
-            newline+=str(final_current)
-            obj[index] = newline
-    return obj, final_current
+        yield counters, ip
 
-######################################################
-
+def interpret(obj,*args,**kwargs):
+    last = None
+    for state, _ in interpret_generator(obj, *args, **kwargs):
+        last = state
+    return last
 
 #A source program is here represented as a sequence of lines, each
 #line a list of strings.  Assemble the source program into the lower-level
 #code used above, and return the low-level program.
 
-def assemble(source):
+def assemble(source, cwd=os.getcwd()):
     symbol_table={}
     obj=[]
-    already_assembled=[]
+    source_map=[]
     current=0
-    for line in source:
+    child_programs = {}
+
+    for line_num, line in source:
         #is it a label?
         #These have the form alphanum*:
         if (len(line)==1) and (line[0][-1]==':') and allin(line[0][:-1],alphanum):
@@ -144,6 +138,14 @@ def assemble(source):
                 sys.exit('redefinition of label '+label)
             else:
                 symbol_table[label]=current
+
+        #is it a print instruction?
+        #These have the form print
+        if (len(line)==1) and (line[0]=='print'):
+            #print 'print'
+            obj.append('P')
+            source_map.append(line_num)
+            current+=1
                 
         #is it a conditional branch instruction?
         #These have the form goto label if x=0 but the parser
@@ -153,6 +155,7 @@ def assemble(source):
             label=line[1]
             variable=line[3][0]
             obj.append('B'+variable+'#'+label)
+            source_map.append(line_num)
             current+=1
         
     
@@ -162,6 +165,7 @@ def assemble(source):
             #print 'unconditional branch'
             label=line[1]
             obj.append('B'+'#'+label)
+            source_map.append(line_num)
             current+=1
             
         #is it a decrement instruction?
@@ -169,73 +173,96 @@ def assemble(source):
         elif (len(line)==2) and (line[0]=='dec') and (len(line[1])==1) and (line[1][0] in letters):
             #print 'decrement'
             obj.append('D'+line[1][0])
+            source_map.append(line_num)
             current+=1
             
         #is is an increment instruction?
         elif (len(line)==2) and (line[0]=='inc') and (len(line[1])==1) and (line[1][0] in letters):
             #print 'increment'
             obj.append('I'+line[1][0])
+            source_map.append(line_num)
+            current+=1
+
+        #is it a MACRO call?
+        elif (len(line)>=3) and (line[0] == 'MACRO'):
+            file = line[1]
+            if file not in child_programs:
+                prog, children, _ = assemble_from_file(file, cwd=cwd, macro=True)
+
+                # store the child program's children in the global dictionary. this flattens the child tree
+                for child_name, child_prog in children.items():
+                    if child_name not in child_programs:
+                        child_programs[child_name] = child_prog
+
+                child_programs[file] = prog
+            obj.append('M'+file+'#'+''.join(line[2:]))
+            source_map.append(line_num)
             current+=1
             
         #is it a halt instruction?
         elif (len(line)==1) and (line[0]=='halt'):
             #print 'halt'
             obj.append('H')
+            source_map.append(line_num)
             current+=1
-
-#############################################
-            
-        #is it a MACRO call?
-        elif (len(line)>=3) and (line[0] == 'MACRO'):
-            #we would essentially insert the counter machine code from the macro call into the assembled language.
-            pair = [0]*2
-            pair[0] = current
-            obj, current = integrate(assemble_from_file(line[1],macro=True), line[2:], obj, current)
-            pair[1] = current
-            already_assembled.append(pair)
-            
-############################################# modifications also made to below code where we resolve table references
-            
     #resolve symbol table references
     for j in range(len(obj)):
         instruction=obj[j]
         if instruction[0]=='B':
-            # if j is not in the range of any of the pairs of already_assembled, then we do below code
-            not_yet_assembled = True
-            for pair in already_assembled:
-                for checking in range(pair[0],pair[1]):
-                    if j == checking:
-                        not_yet_assembled = False
-                        
-            if not_yet_assembled:
-                place=instruction.index('#')
-                label=instruction[place+1:]
-                if not label in symbol_table:
-                    sys.exit('undefined label '+label)
-                else:
-                    instruction=instruction[:place]+str(symbol_table[label])
-                    obj[j]=instruction
-    return obj
+            place=instruction.index('#')
+            label=instruction[place+1:]
+            if not label in symbol_table:
+                sys.exit('undefined label '+label)
+            else:
+                instruction=instruction[:place]+str(symbol_table[label])
+                obj[j]=instruction
+    return obj, child_programs, source_map
 
 #Now produce object code from source file.  Skip comments and blank lines.
-def assemble_from_file(filename,macro=False):
-    # if this is assembled as a macro call, then we need to append '.cp' to find the file
+def assemble_from_file(filename, cwd=os.getcwd(), macro=False):
     if macro:
-        filename+='.cp'
-    f=open(filename,'r')
-    source=[]
-    for line in f:
-        if (line[0]!='#') and not allin(line,string.whitespace):
-            source.append(line.split())
+        filename += '.cp'
+
+    path = os.path.join(cwd, filename)
+
+    with open(path, 'r') as f:
+        source=[]
+        for line_num, line in enumerate(f):
+            if (line[0]!='#') and not allin(line,string.whitespace):
+                source.append((line_num, line.split()))
     #print source
-    return assemble(source)
+    return assemble(source, cwd=os.path.dirname(path))
 
 #run a program from a file on a sequence of inputs
 def runcp(filename,*args,**kwargs):
     obj = assemble_from_file(filename)
     return interpret(obj,*args,**kwargs)
-            
-    
-            
 
-    
+def is_valid_file(arg):
+    if not os.path.isfile(arg):
+        if os.path.isfile(arg + '.cp'):
+            return arg + '.cp'
+        raise argparse.ArgumentTypeError('%s is not a valid file.' % arg)
+    return arg
+
+def is_valid_initial(arg):
+    try:
+        val = int(arg)
+        if val < 0:
+            raise argparse.ArgumentTypeError('%s is not a positive integer.' % arg)
+        return int(arg)
+    except:
+        raise argparse.ArgumentTypeError('%s is not a positive integer.' % arg)
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Assemble and run a counter program.')
+    parser.add_argument('file', type=is_valid_file, help='Counter program file name')
+    parser.add_argument('initial_values', nargs='+', type=is_valid_initial, help='The initial values for the counter program. These must be positive integers.')
+    parser.add_argument('-v', '--verbose',  help='Verbose output', action='store_true')
+    parser.add_argument('-vv', '--very-verbose',  help='Extra verbose output', action='store_true')
+
+    args = parser.parse_args()
+
+    print(runcp(args.file, *args.initial_values, verbose=args.verbose, very_verbose=args.very_verbose))

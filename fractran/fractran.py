@@ -1,10 +1,15 @@
 import math
 import string
 import sys
-import countermachine as cm
 
 digits = '0123456789'
 fractran_allowed = digits + '*'
+
+def allin(s,charset):
+    for c in s:
+        if not (c in charset):
+            return False
+    return True
 
 # Derived from https://stackoverflow.com/a/16996439
 def prime_factorize(n):
@@ -79,7 +84,7 @@ def transpile(source):
     fractions = []
 
     for line_num, line in enumerate(source):
-        if len(line) != 2 or not (cm.allin(line[0] + line[1], fractran_allowed)):
+        if len(line) != 2 or not (allin(line[0] + line[1], fractran_allowed)):
             sys.exit('Invalid line on {}: {}'.format(line_num + 1, ' '.join(line)))
 
         try:
@@ -164,7 +169,7 @@ def transpile_from_file(filename, output):
     with open(filename, 'r') as f:
         source=[]
         for line in f:
-            if (line[0]!='#') and not cm.allin(line,string.whitespace):
+            if (line[0]!='#') and not allin(line,string.whitespace):
                 source.append(line.split())
 
     cp = transpile(source)
@@ -172,3 +177,22 @@ def transpile_from_file(filename, output):
     with open(output, 'w') as f:
         for line in cp:
             f.write(' '.join(line) + '\n')
+
+def is_valid_file(arg):
+    if not os.path.isfile(arg):
+        if os.path.isfile(arg + '.cp'):
+            return arg + '.cp'
+        raise argparse.ArgumentTypeError('%s is not a valid file.' % arg)
+    return arg
+
+if __name__ == "__main__":
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description='Transpile a FRACTRAN program into a counter machine program')
+    parser.add_argument('input', type=is_valid_file, help='FRACTRAN program file name')
+    parser.add_argument('output', help='Counter machine program file name')
+
+    args = parser.parse_args()
+
+    print(transpile_from_file(args.input, args.output))

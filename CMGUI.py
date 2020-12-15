@@ -17,7 +17,7 @@ from string import ascii_lowercase as lower
 from codeinput import CodeInputM
 from textinput import TextInputM
 from button import ButtonM
-import countermachine_david as cm
+import countermachine as cm
 import os
 from pygments.style import Style
 from pygments.lexer import RegexLexer, bygroups
