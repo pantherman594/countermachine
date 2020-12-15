@@ -291,7 +291,10 @@ class MainWindow(Widget):
             stream.write(self.text_input.text)
 
         self.reassemble_counter_program(filename)
-        self.draw_flowchart()
+        try:
+            self.draw_flowchart()
+        except:
+            print("failed to draw flowchart")
         self.filename = filename
         self.dismiss_popup()
 
@@ -301,7 +304,10 @@ class MainWindow(Widget):
             self.text_input.text = stream.read()
 
         self.reassemble_counter_program(filename[0])
-        self.draw_flowchart()
+        try:
+            self.draw_flowchart()
+        except:
+            print("failed to draw flowchart")
         self.filename = filename[0]
         self.dismiss_popup()
 
