@@ -103,7 +103,6 @@ class MainWindow(Widget):
     line_map = ObjectProperty(None)
     counter_delay = NumericProperty(0.1)
     start_state = BooleanProperty(True)
-    step_list = ListProperty()
 
     CPLexer = CPLexer
     GruvboxStyle = GruvboxStyle
@@ -330,6 +329,14 @@ class MainWindow(Widget):
             print("failed to draw flowchart")
         self.filename = filename[0]
         self.dismiss_popup()
+
+    def step_back_counter_program(self):
+        # generator has no easy way to step back so lol, this will do
+        count = self.counter_program_step_count
+        self.reset_all()
+
+        for i in range(count-1):
+            self.step_counter_program()
 
     def run_or_pause_counter_program(self):
         if self.running:
