@@ -12,6 +12,7 @@
 #The function below interprets the low-level code.  The second argument is
 #a tuple of integers originally assigned to 'a','b',.... 
 
+import os
 import string
 import sys
 letters='abcdefghijklmnopqrstuvwxyz'
@@ -87,7 +88,7 @@ def interpret_generator(obj,*args,**kwargs):
             macro_counter_values = [(counters[x] if x >= 0 else 0) for x in macro_counters]
 
             # call the child program. pass the global child_programs down to it
-            result = interpret(child_programs[file],
+            result = interpret((child_programs[file], {}, []),
                                *macro_counter_values,
                                verbose=verbose,
                                very_verbose=very_verbose,
@@ -122,7 +123,7 @@ def interpret(obj,*args,**kwargs):
 #line a list of strings.  Assemble the source program into the lower-level
 #code used above, and return the low-level program.
 
-def assemble(source):
+def assemble(source, cwd=os.getcwd()):
     symbol_table={}
     obj=[]
     source_map=[]
@@ -188,14 +189,14 @@ def assemble(source):
         elif (len(line)>=3) and (line[0] == 'MACRO'):
             file = line[1]
             if file not in child_programs:
-                prog, children, _ = assemble_from_file(file, macro=True)
+                prog, children, _ = assemble_from_file(file, cwd=cwd, macro=True)
 
                 # store the child program's children in the global dictionary. this flattens the child tree
                 for child_name, child_prog in children.items():
                     if child_name not in child_programs:
                         child_programs[child_name] = child_prog
 
-                child_programs[file] = prog, {}
+                child_programs[file] = prog
             obj.append('M'+file+'#'+''.join(line[2:]))
             source_map.append(line_num)
             current+=1
@@ -220,16 +221,19 @@ def assemble(source):
     return obj, child_programs, source_map
 
 #Now produce object code from source file.  Skip comments and blank lines.
-def assemble_from_file(filename, macro=False):
+def assemble_from_file(filename, cwd=os.getcwd(), macro=False):
     if macro:
         filename += '.cp'
-    with open(filename, 'r') as f:
+
+    path = os.path.join(cwd, filename)
+
+    with open(path, 'r') as f:
         source=[]
         for line_num, line in enumerate(f):
             if (line[0]!='#') and not allin(line,string.whitespace):
                 source.append((line_num, line.split()))
     #print source
-    return assemble(source)
+    return assemble(source, cwd=os.path.dirname(path))
 
 #run a program from a file on a sequence of inputs
 def runcp(filename,*args,**kwargs):
@@ -254,7 +258,6 @@ def is_valid_initial(arg):
 
 if __name__ == "__main__":
     import argparse
-    import os.path
 
     parser = argparse.ArgumentParser(description='Assemble and run a counter program.')
     parser.add_argument('file', type=is_valid_file, help='Counter program file name')
