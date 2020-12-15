@@ -306,7 +306,7 @@ class MainWindow(Widget):
 
     def save(self, path, filename):
         print(path, filename)
-        if filename[-3:] != '.cp':
+        if len(filename) < 3 and filename[-3:] != '.cp':
             filename+=".cp"
 
         with open(os.path.join(path, filename), 'w') as stream:
@@ -324,16 +324,21 @@ class MainWindow(Widget):
 
     def load(self, path, filename):
         print(path, filename)
-        with open(os.path.join(path, filename[0])) as stream:
-            self.text_input.text = stream.read()
-
-        self.reassemble_counter_program(filename[0])
         try:
-            self.draw_flowchart()
+            if len(filename[0]) < 3:
+                return
+            with open(os.path.join(path, filename[0])) as stream:
+                self.text_input.text = stream.read()
+
+            self.reassemble_counter_program(filename[0])
+            try:
+                self.draw_flowchart()
+            except:
+                print("failed to draw flowchart")
+            self.filename = path+filename[0]
+            self.dismiss_popup()
         except:
-            print("failed to draw flowchart")
-        self.filename = filename[0]
-        self.dismiss_popup()
+            print("failed to load")
 
     def step_back_counter_program(self):
         # generator has no easy way to step back so lol, this will do
