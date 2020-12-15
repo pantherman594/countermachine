@@ -267,7 +267,6 @@ class MainWindow(Widget):
 
     def file_saver(self):
         content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
-        print(path, filename)
         self._popup = Popup(title="Save file", content=content, size_hint=(0.4, 0.7))
         self._popup.open()
 

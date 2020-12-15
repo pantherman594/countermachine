@@ -140,6 +140,7 @@
             id: filechooser
             path: './'
             filters: ['*.cp']
+            on_submit: root.load(filechooser.path, filechooser.selection)
 
         BoxLayout:
             size_hint_y: None
@@ -162,6 +163,7 @@
             path: './'
             filters: ['*.cp']
             on_selection: text_input.text = self.selection and self.selection[0] or ''
+            on_submit: root.save(filechooser.path, text_input.text)
 
         TextInput:
             id: text_input
