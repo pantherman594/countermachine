@@ -198,7 +198,7 @@
             size: root.width * 0.67, root.height
 
             Label:
-                text: 'Simulator'
+                text: 'Simulator:'
                 size_hint: None, None
                 size: root.width * 0.67, root.height * 0.05
 
@@ -209,17 +209,15 @@
 
                 AnchorLayout:
                     size_hint: None, None
-                    size: root.width * 0.3, root.height * 0.05
+                    size: root.width * 0.22, root.height * 0.05
 
                     Label:
                         text: 'Tape Input: '
                         size_hint: None, None
                         text_size: self.size
-                        size: root.width * 0.3, root.height * 0.05
+                        size: root.width * 0.22, root.height * 0.05
                         halign: 'right'
                         valign: 'middle'
-
-                # TODO: center the text input
 
                 TextInput:
                     id: tape_input
@@ -231,6 +229,11 @@
                     padding: [6, (self.height - self.line_height)/2]
                     multiline: False
                     on_text: root.on_text(tape_input.text)
+
+                    lexer: root.CPLexer()
+                    style: root.GruvboxStyle
+                    background_color: (0.16, 0.16, 0.16, 1)
+                    foreground_color: (0.8, 0.8, 0.8, 1)
 
             BoxLayout:
                 id: flowchart
@@ -290,6 +293,11 @@
                             size: root.width * 0.67 * 0.335 * 0.474, root.height * 0.035
                             on_text: root.update_delay(self.text)
 
+                            lexer: root.CPLexer()
+                            style: root.GruvboxStyle
+                            background_color: (0.16, 0.16, 0.16, 1)
+                            foreground_color: (0.8, 0.8, 0.8, 1)
+
 
 
                 BoxLayout:
@@ -346,6 +354,7 @@
                     font_size: 14
                     font_name: 'FiraMono-Regular'
                     pos_hint: {'x': 0.025, 'y': 0.025}
+                    size_hint: .95, .98
                     size: root.width * 0.33, root.height * 0.90
 
             BoxLayout:
