@@ -161,9 +161,21 @@ class MainWindow(Widget):
             return False
 
         file_line = self.assembled_counter_program[2][line]
-        text_index = [i for i, n in enumerate(self.text_input.text + '\n') if n == '\n'][file_line]
-        self.text_input.cursor = self.text_input.get_cursor_from_index(text_index)
+        newlines = [i for i, n in enumerate(self.text_input.text) if n == '\n']
+
+        try:
+            start_index = newlines[file_line - 1]
+        except IndexError:
+            start_index = 0
+        try:
+            end_index = newlines[file_line]
+        except IndexError:
+            end_index = len(self.text_input.text)
+
+        print(start_index, end_index)
+
         self.text_input.focus = True
+        self.text_input.select_text(start_index, end_index)
         return True
 
     def reset_all(self):
