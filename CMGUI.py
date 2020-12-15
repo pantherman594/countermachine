@@ -91,8 +91,12 @@ class MainWindow(Widget):
     tape_input = ObjectProperty(None)
     filename = StringProperty('')
     flowchart_state = BooleanProperty(False)
-    counter_tape_state = BooleanProperty(False)
     counter_list = ListProperty([0]*26)
+    counter_list_str = ListProperty(["0"]*26)
+    counter_list_len = ListProperty([1]*26)
+    counter_list_len_soft = ListProperty([1]*26)
+    counter_list_total_len = NumericProperty(26)
+    counter_list_total_len_soft = NumericProperty(26)
     assembled_counter_program = ObjectProperty(None)
     counter_program_generator = ObjectProperty(None)
     counter_program_step = NumericProperty(0)
@@ -108,7 +112,6 @@ class MainWindow(Widget):
     GruvboxStyle = GruvboxStyle
 
     wrapper = ScrollView()
-    counter_tape_wrapper = BoxLayout()
 
     # Draws flowchart
     def draw_flowchart(self):
@@ -227,16 +230,28 @@ class MainWindow(Widget):
                 return
 
             self.counter_list, self.counter_program_step = next_step
+            self.update_counter_tape_strings()
             self.counter_program_step_count += 1
             print(self.counter_program_step)
             if self.counter_program_step in self.line_map:
                 for component in self.line_map[self.counter_program_step]:
                     component.line_color = HIGHLIGHT
 
-            self.draw_counter_tape()
         else:
             self.running = False
             self.counter_clock.cancel()
+
+    def update_counter_tape_strings(self):
+        # prevent divide by 0 error
+        self.counter_list_total_len = 1
+        for number in range(26):
+            self.counter_list_str[number] = str(self.counter_list[number])
+            self.counter_list_len[number] = len(self.counter_list_str[number])
+            self.counter_list_len_soft[number] = (self.counter_list_len[number] - 1) / 4 + 1
+            self.counter_list_total_len += self.counter_list_len[number]
+        self.counter_list_total_len -= 1
+        self.counter_list_total_len_soft = 26 + ((self.counter_list_total_len - 26) / 4)
+        print(self.counter_list_total_len_soft, self.counter_list_total_len)
 
     def clear_flowchart(self):
         if self.flowchart_state:
@@ -253,33 +268,15 @@ class MainWindow(Widget):
         try:
             l = value.split(',')
             self.counter_list = [0]*26
+            self.update_counter_tape_strings()
             for item in range(len(l)):
                 self.counter_list[item] = int(l[item])
+            self.update_counter_tape_strings()
         except:
             print('Cannot update counter tape')
         self.start_state = True
-        self.draw_counter_tape()
         self.reset_generator()
         return
-
-    def draw_counter_tape(self):
-        if self.counter_tape_state:
-            self.clear_counter_tape()
-
-        self.counter_tape_wrapper = BoxLayout(orientation = "horizontal")
-
-        for number in range(len(self.counter_list)):
-            self.counter_tape_wrapper.add_widget(Label(text=str(self.counter_list[number]),
-                                                       font_size=22))
-
-        self.ids.counter_tape.add_widget(self.counter_tape_wrapper)
-
-        self.counter_tape_state = True
-
-    def clear_counter_tape(self):
-        if self.counter_tape_state:
-            self.ids.counter_tape.remove_widget(self.counter_tape_wrapper)
-            self.counter_tape_state = False
 
     def file_chooser(self):
         self.dismiss_popup()
@@ -372,7 +369,7 @@ class MainWindow(Widget):
                 self.step_state = False
                 self.running = False
 
-                self.draw_counter_tape()
+                self.update_counter_tape_strings()
 
     def update_delay(self, value):
         try:
@@ -413,7 +410,7 @@ class MainWindow(Widget):
         print('bind')
         self._keyboard.bind(on_key_down=self._on_key_down)
         print(self.text_input.style)
-        self.draw_counter_tape()
+        self.update_counter_tape_strings()
 
 class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
