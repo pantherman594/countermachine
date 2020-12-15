@@ -157,11 +157,12 @@ class MainWindow(Widget):
         if line == -1:
             return False
 
-        if not (ev.is_double_tap and instance.collide_point(*ev.pos)):
+        if not instance.collide_point(*ev.pos):
             return False
 
-        print(line, self.assembled_counter_program[2][line])
-        self.text_input.cursor = (0, self.assembled_counter_program[2][line])
+        file_line = self.assembled_counter_program[2][line]
+        text_index = [i for i, n in enumerate(self.text_input.text + '\n') if n == '\n'][file_line]
+        self.text_input.cursor = self.text_input.get_cursor_from_index(text_index)
         self.text_input.focus = True
         return True
 
@@ -204,7 +205,7 @@ class MainWindow(Widget):
                 self.step_state = False
 
                 if self.running:
-                    self.running = False,
+                    self.running = False
                     self.counter_clock.cancel()
 
                 return
@@ -216,6 +217,9 @@ class MainWindow(Widget):
                     component.line_color = HIGHLIGHT
 
             self.draw_counter_tape()
+        else:
+            self.running = False
+            self.counter_clock.cancel()
 
     def clear_flowchart(self):
         if self.flowchart_state:
@@ -258,21 +262,23 @@ class MainWindow(Widget):
             self.ids.counter_tape.remove_widget(self.counter_tape_wrapper)
             self.counter_tape_state = False
 
-
-
     def file_chooser(self):
+        self.dismiss_popup()
+
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content, size_hint=(0.4, 0.7))
         self._popup.open()
 
     def file_saver(self):
+        self.dismiss_popup()
+
         content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
-        print(path, filename)
         self._popup = Popup(title="Save file", content=content, size_hint=(0.4, 0.7))
         self._popup.open()
 
     def dismiss_popup(self):
-        self._popup.dismiss()
+        if hasattr(self, '_popup'):
+            self._popup.dismiss()
 
     def reassemble_counter_program(self, filename):
         assembled = cm.assemble_from_file(filename)
@@ -305,7 +311,25 @@ class MainWindow(Widget):
             self.counter_clock.cancel()
         else:
             self.running = True
-            self.counter_clock = Clock.schedule_interval(lambda dt: self.step_counter_program(), self.counter_delay)
+            if self.counter_delay != 0:
+                self.counter_clock = Clock.schedule_interval(lambda dt: self.step_counter_program(), self.counter_delay)
+            else:
+                if self.counter_program_step in self.line_map:
+                    for component in self.line_map[self.counter_program_step]:
+                        component.line_color = COLOR
+
+                last_state = None
+                last_step = -1
+                for value in self.counter_program_generator:
+                    last_state, last_step = value
+
+                self.counter_list = last_state
+                self.counter_program_step = last_step
+
+                self.step_state = False
+                self.running = False
+
+                self.draw_counter_tape()
 
     def update_delay(self, value):
         try:
@@ -330,9 +354,6 @@ class MainWindow(Widget):
                 self.save('', self.filename)
             else:
                 self.file_saver()
-            return True
-        if keycode[0] == 114 and ctrl: # r
-            self.draw_flowchart()
             return True
         if keycode[0] == 111 and ctrl: # o
             self.file_chooser()
