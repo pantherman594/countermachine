@@ -195,27 +195,26 @@
         BoxLayout:
             orientation: "vertical"
             size_hint: None, None
-            size: root.width * 0.67, root.height
+            size: root.width * 0.67 - 1, root.height
 
             Label:
                 text: 'Simulator:'
                 size_hint: None, None
-                size: root.width * 0.67, root.height * 0.05
+                size: root.width * 0.67 - 1, root.height * 0.05
 
             BoxLayout:
                 # tape input
                 size_hint: 0.4, None
-                size: root.width * 0.67, root.height * 0.05
-
+                size: root.width * 0.67 - 1, root.height * 0.05 - 1
                 AnchorLayout:
                     size_hint: None, None
-                    size: root.width * 0.22, root.height * 0.05
+                    size: root.width * 0.21, root.height * 0.05
 
                     Label:
                         text: 'Tape Input: '
                         size_hint: None, None
                         text_size: self.size
-                        size: root.width * 0.22, root.height * 0.05
+                        size: root.width * 0.21, root.height * 0.05
                         halign: 'right'
                         valign: 'middle'
 
@@ -235,32 +234,65 @@
                     background_color: (0.16, 0.16, 0.16, 1)
                     foreground_color: (0.8, 0.8, 0.8, 1)
 
+            Widget:
+                size_hint: None, None
+                size: root.width * 0.67 - 1, 2
+
+                canvas:
+                    Color:
+                        rgba: 0.6, 0.6, 0.6, 0.9
+                    Rectangle:
+                        pos: self.x, self.y
+                        size: self.width,2
+
             BoxLayout:
                 id: flowchart
                 pos_hint: {'x': 0, 'y': .1}
                 size_hint: None, None
-                size: root.width * 0.67, root.height * 0.75
+                size: root.width * 0.67 - 1, root.height * 0.75 - 2
+
+            Widget:
+                size_hint: None, None
+                size: root.width * 0.67 - 1, 2
+
+                canvas:
+                    Color:
+                        rgba: 0.6, 0.6, 0.6, 0.9
+                    Rectangle:
+                        pos: self.x, self.y
+                        size: self.width,2
 
             BoxLayout:
                 # counter tape
                 id: counter_tape
                 size_hint: None, None
-                size: root.width * 0.67, root.height * 0.05
+                size: root.width * 0.67 - 1, root.height * 0.05 - 2
+
+            Widget:
+                size_hint: None, None
+                size: root.width * 0.67 - 1, 2
+
+                canvas:
+                    Color:
+                        rgba: 0.6, 0.6, 0.6, 0.9
+                    Rectangle:
+                        pos: self.x, self.y
+                        size: self.width,2
 
             BoxLayout:
                 orientation: "horizontal"
                 size_hint: None, None
-                size: root.width * 0.67, root.height * 0.091
+                size: root.width * 0.67 - 1, root.height * 0.091 + 10
 
                 BoxLayout:
                     # this is a spacer
                     size_hint: None, None
-                    size: root.width * 0.67 * 0.003, root.height * 0.097
+                    size: root.width * 0.67 * 0.003 - 1, root.height * 0.097 - 1
 
                 GridLayout:
                     cols: 2
                     size_hint: None, None
-                    size: root.width * 0.67 * 0.334, root.height * 0.097
+                    size: root.width * 0.67 * 0.334 - 1, root.height * 0.097 - 1
 
                     AnchorLayout:
                         Button:
@@ -276,7 +308,7 @@
                             on_release: root.reset_all()
 
                     AnchorLayout:
-                        size: root.width * 0.67 * 0.335 * 0.2, root.height * 0.097 * 0.5
+                        size: root.width * 0.67 * 0.335 * 0.2 - 1, root.height * 0.097 * 0.5 - 1
                         Label:
                             text: " Delay (s)"
                             size_hint: None, None
@@ -290,7 +322,7 @@
                             text: "0.1"
                             size_hint: None, None
                             pos_hint: {'x': 0, 'y': 0.15}
-                            size: root.width * 0.67 * 0.335 * 0.474, root.height * 0.035
+                            size: root.width * 0.67 * 0.335 * 0.474 - 1, root.height * 0.035 - 1
                             on_text: root.update_delay(self.text)
 
                             lexer: root.CPLexer()
@@ -303,7 +335,7 @@
                 BoxLayout:
                     orientation: "vertical"
                     size_hint: None, None
-                    size: root.width * 0.67 * 0.33, root.height * 0.097
+                    size: root.width * 0.67 * 0.33 - 1, root.height * 0.097 - 1
 
                     AnchorLayout:
                         Button:
@@ -320,7 +352,7 @@
                 BoxLayout:
                     orientation: "vertical"
                     size_hint: None, None
-                    size: root.width * 0.67 * 0.333, root.height * 0.097
+                    size: root.width * 0.67 * 0.333 - 1, root.height * 0.097 - 1
 
                     Label:
                         text: "State: 0"
@@ -330,18 +362,31 @@
             BoxLayout:
                 # this is a spacer
                 size_hint: None, None
-                size: root.width * 0.67, root.height * 0.003
+                size: root.width * 0.67 - 1, root.height * 0.003 - 1
+
+        #spacer line
+        Widget:
+            size_hint: None, None
+            size: 2, root.height
+
+            canvas:
+                Color:
+                    rgba: 0.6, 0.6, 0.6, 0.9
+                Rectangle:
+                    pos: self.x, self.y
+                    size: 2,self.height
+
 
         # CP Editor
         BoxLayout:
             orientation: "vertical"
             size_hint: None, None
-            size: root.width * 0.33, root.height
+            size: root.width * 0.33 - 1, root.height
 
             Label:
                 text: 'Editor:'
                 size_hint: None, None
-                size: root.width * 0.33, root.height * 0.05
+                size: root.width * 0.33 - 1, root.height * 0.05
 
             AnchorLayout:
                 CodeInput:
@@ -355,12 +400,12 @@
                     font_name: 'FiraMono-Regular'
                     pos_hint: {'x': 0.025, 'y': 0.025}
                     size_hint: .95, .98
-                    size: root.width * 0.33, root.height * 0.90
+                    size: root.width * 0.33 - 1, root.height * 0.90
 
             BoxLayout:
                 orientation: "horizontal"
                 size_hint : None, None
-                size: root.width * 0.33, root.height * 0.1
+                size: root.width * 0.33 - 1, root.height * 0.1
 
                 AnchorLayout:
                     Button:
