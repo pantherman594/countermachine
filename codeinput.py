@@ -171,7 +171,7 @@ class CodeInputM(CodeInput):
 
             # ok, we found it.
             texture = label.texture
-            Cache_append('textinput.label', cid, texture)
+            Cache_append('textinput.label', cid, texture, timeout=5)
             label.text = ''
         return texture
 

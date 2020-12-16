@@ -11,6 +11,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.scrollview import ScrollView
 from kivy.properties import (ListProperty, StringProperty, ObjectProperty, BooleanProperty, ListProperty, ReferenceListProperty, NumericProperty)
 from kivy.clock import Clock
+from kivy.cache import Cache
 from kivy.utils import escape_markup
 from string import ascii_lowercase as lower
 
@@ -186,6 +187,8 @@ class MainWindow(Widget):
         return True
 
     def reset_all(self):
+        Cache.remove('textinput.label')
+        self.text_input._trigger_refresh_text()
         if self.counter_clock is not None:
             self.counter_clock.cancel()
         self.running = False
