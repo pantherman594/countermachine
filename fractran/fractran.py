@@ -143,14 +143,16 @@ def transpile(source):
             if counter == -1:
                 break
 
-            counter_program.append(['inc', chr(ord('a') + counter)])
+            for i in range(count):
+                counter_program.append(['inc', chr(ord('a') + counter)])
 
 
         for counter, count in denominator:
             if counter == -1:
                 break
 
-            counter_program.append(['dec', chr(ord('a') + counter)])
+            for i in range(count):
+                counter_program.append(['dec', chr(ord('a') + counter)])
 
         counter_program.append(['goto', 'step_0'])
 
@@ -195,4 +197,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print(transpile_from_file(args.input, args.output))
+    transpile_from_file(args.input, args.output)
+    print('Output written to', args.output)
