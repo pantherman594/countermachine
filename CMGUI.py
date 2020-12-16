@@ -1,5 +1,6 @@
 from functools import partial
 import kivy
+from kivy.config import Config
 from kivy.resources import resource_add_path, resource_find
 from kivy.app import App
 from kivy.core.window import Window
@@ -667,7 +668,9 @@ def diagram(program):
     return components_flattened
 
 if __name__ == '__main__':
-    Window.size = (1600, 900)
+    x = int(Config.get('graphics', 'height')) * 2.5
+    y = int(Config.get('graphics', 'height')) * 1.5
+    Window.size = (x,y)
     if hasattr(sys, '_MEIPASS'):
         resource_add_path(os.path.join(sys._MEIPASS))
     CMGUIApp().run()
