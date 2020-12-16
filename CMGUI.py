@@ -260,6 +260,8 @@ class MainWindow(Widget):
         # prevent divide by 0 error
         self.counter_list_total_len = 1
         for number in range(26):
+            if self.counter_list[number] < 0:
+                self.counter_list[number] *= -1
             self.counter_list_str[number] = str(self.counter_list[number])
             self.counter_list_len[number] = len(self.counter_list_str[number])
             self.counter_list_len_soft[number] = (self.counter_list_len[number] - 1) / 4 + 1
@@ -335,6 +337,11 @@ class MainWindow(Widget):
             self.draw_flowchart()
         except:
             print("failed to draw flowchart")
+        try:
+            self.reset_all()
+            self.reset_generator()
+        except:
+            print("error resetting generator")
         self.dismiss_popup()
 
     def load(self, path, filename):
@@ -346,11 +353,19 @@ class MainWindow(Widget):
             self.text_input.text = stream.read()
 
         self.filename = os.path.realpath(file)
-        self.reassemble_counter_program(self.filename)
+        try:
+            self.reassemble_counter_program(self.filename)
+        except:
+            print("error assembling counter program")
         try:
             self.draw_flowchart()
         except:
             print("failed to draw flowchart")
+        try:
+            self.reset_all()
+            self.reset_generator()
+        except:
+            print("error resetting generator")
         self.dismiss_popup()
 
     def step_back_counter_program(self):
