@@ -683,8 +683,8 @@ def diagram(program):
     return components_flattened
 
 if __name__ == '__main__':
-    x = int(Config.get('graphics', 'height')) * 2.5
-    y = int(Config.get('graphics', 'height')) * 1.5
+    x = int(Config.get('graphics', 'height')) * 2
+    y = int(Config.get('graphics', 'height')) * 1.4
     Window.size = (x,y)
     if hasattr(sys, '_MEIPASS'):
         resource_add_path(os.path.join(sys._MEIPASS))
