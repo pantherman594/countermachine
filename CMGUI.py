@@ -1,5 +1,6 @@
 from functools import partial
 import kivy
+from kivy.resources import resource_add_path, resource_find
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.gridlayout import GridLayout
@@ -19,7 +20,7 @@ from codeinput import CodeInputM
 from textinput import TextInputM
 from button import ButtonM
 import countermachine as cm
-import os
+import os, sys
 from pygments.style import Style
 from pygments.lexer import RegexLexer, bygroups
 from pygments.token import Token, Comment, Name, Keyword, Generic, Number, Operator, String
@@ -312,7 +313,11 @@ class MainWindow(Widget):
         self.assembled_counter_program = assembled
 
     def save(self, path, filename):
-        if len(filename) < 3 and filename[-3:] != '.cp':
+        #if len(filename) < 3 and filename[-3:] != '.cp':
+        try:
+            if filename[-3:] != '.cp':
+                filename += '.cp'
+        except:
             filename += '.cp'
 
         file = os.path.join(path, filename)
@@ -321,7 +326,10 @@ class MainWindow(Widget):
             stream.write(self.text_input.text)
 
         self.filename = os.path.realpath(file)
-        self.reassemble_counter_program(self.filename)
+        try:
+            self.reassemble_counter_program(self.filename)
+        except:
+            print("error assembling counter program")
         try:
             self.draw_flowchart()
         except:
@@ -660,4 +668,6 @@ def diagram(program):
 
 if __name__ == '__main__':
     Window.size = (1600, 900)
+    if hasattr(sys, '_MEIPASS'):
+        resource_add_path(os.path.join(sys._MEIPASS))
     CMGUIApp().run()

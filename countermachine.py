@@ -10,7 +10,7 @@
 #H#
 
 #The function below interprets the low-level code.  The second argument is
-#a tuple of integers originally assigned to 'a','b',.... 
+#a tuple of integers originally assigned to 'a','b',....
 
 import os
 import string
@@ -60,7 +60,7 @@ def interpret_generator(obj,*args,**kwargs):
             if verbose:
                 print (str(ip)+': '+'dec '+current_instruction[1])
             ip+=1
-            
+
         elif current_instruction[0]=='B' and (current_instruction[1] in letters):
             variable=ord(current_instruction[1])-ord('a')
             #print ip,variable
@@ -71,7 +71,7 @@ def interpret_generator(obj,*args,**kwargs):
                 ip=target
             else:
                 ip+=1
-            
+
         elif current_instruction[0]=='B':
             target=int(current_instruction[1:])
             if verbose:
@@ -146,7 +146,7 @@ def assemble(source, cwd=os.getcwd()):
             obj.append('P')
             source_map.append(line_num)
             current+=1
-                
+
         #is it a conditional branch instruction?
         #These have the form goto label if x=0 but the parser
         #accepts anything of form goto label if lower-case letter followd by anything.
@@ -157,8 +157,8 @@ def assemble(source, cwd=os.getcwd()):
             obj.append('B'+variable+'#'+label)
             source_map.append(line_num)
             current+=1
-        
-    
+
+
         #is it an unconditional branch instruction?
         #These have the form goto label
         elif (len(line)==2) and (line[0]=='goto') and allin(line[1],alphanum):
@@ -167,7 +167,7 @@ def assemble(source, cwd=os.getcwd()):
             obj.append('B'+'#'+label)
             source_map.append(line_num)
             current+=1
-            
+
         #is it a decrement instruction?
         #these have the form dec variable
         elif (len(line)==2) and (line[0]=='dec') and (len(line[1])==1) and (line[1][0] in letters):
@@ -175,7 +175,7 @@ def assemble(source, cwd=os.getcwd()):
             obj.append('D'+line[1][0])
             source_map.append(line_num)
             current+=1
-            
+
         #is is an increment instruction?
         elif (len(line)==2) and (line[0]=='inc') and (len(line[1])==1) and (line[1][0] in letters):
             #print 'increment'
@@ -198,7 +198,7 @@ def assemble(source, cwd=os.getcwd()):
             obj.append('M'+file+'#'+''.join(line[2:]))
             source_map.append(line_num)
             current+=1
-            
+
         #is it a halt instruction?
         elif (len(line)==1) and (line[0]=='halt'):
             #print 'halt'
@@ -225,13 +225,21 @@ def assemble_from_file(filename, cwd=os.getcwd(), macro=False):
 
     path = os.path.join(cwd, filename)
 
-    with open(path, 'r') as f:
-        source=[]
-        for line_num, line in enumerate(f):
-            if (line[0]!='#') and not allin(line,string.whitespace):
-                source.append((line_num, line.split()))
-    #print source
-    return assemble(source, cwd=os.path.dirname(path))
+    try:
+        with open(path, 'r') as f:
+            source=[]
+            for line_num, line in enumerate(f):
+                if (line[0]!='#') and not allin(line,string.whitespace):
+                    source.append((line_num, line.split()))
+        #print source
+        return assemble(source, cwd=os.path.dirname(path))
+    except UnboundLocalError:
+        print("Some file that was called with MACRO is missing")
+    except FileNotFoundError:
+        print("No such file '",filename,"' found")
+    except:
+        print("Something went wrong while assembling file")
+
 
 #run a program from a file on a sequence of inputs
 def runcp(filename,*args,**kwargs):
