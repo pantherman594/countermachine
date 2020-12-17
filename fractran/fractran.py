@@ -74,6 +74,12 @@ def gen_primes():
 
         q += 1
 
+# Calculate the GCD of a and b using the Euclidian algorithm.
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
+
 # A source program is here represented as a sequence of lines, each
 # line a list of strings. Transpile the machine into a counter program,
 # and return its lines. This uses the less and cleanup macros. Counters
@@ -89,7 +95,16 @@ def transpile(source):
 
         try:
             # eval the expression to allow for the format a*b
-            fractions.append([prime_factorize(int(eval(x))) for x in line])
+            line_int = [int(eval(x)) for x in line]
+
+            for x in line_int:
+                if x < 1:
+                    sys.exit('Invalid line on {}: {}'.format(line_num + 1, ' '.join(line)))
+
+            # Compute the GCD to simplify the fraction
+            nd_gcd = gcd(*line_int)
+
+            fractions.append([prime_factorize(x/nd_gcd) for x in line_int])
         except:
             sys.exit('Invalid line on {}: {}'.format(line_num + 1, ' '.join(line)))
 
@@ -164,10 +179,6 @@ def transpile(source):
     return counter_program
 
 def transpile_from_file(filename, output):
-    with open(output, 'x') as f:
-        # make sure the output file doesn't already exist
-        pass
-
     with open(filename, 'r') as f:
         source=[]
         for line in f:
